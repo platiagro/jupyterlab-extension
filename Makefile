@@ -17,4 +17,4 @@ build:
 	jupyter lab build
 
 launch:
-	jupyter lab --watch --NotebookApp.token='' --NotebookApp.password=''
+	jupyter lab --NotebookApp.token='' --NotebookApp.password=''

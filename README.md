@@ -48,6 +48,12 @@ jupyter lab build
 
 ## Contributing
 
+### Set env variables
+
+```bash
+export PROJECTS_ENDPOINT=http://<host:port>
+```
+
 ### Install
 
 The `jlpm` command is JupyterLab's pinned version of
