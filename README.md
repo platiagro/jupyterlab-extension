@@ -51,6 +51,7 @@ jupyter lab build
 ### Set env variables
 
 ```bash
+export DATASETS_ENDPOINT=http://<host:port>
 export PROJECTS_ENDPOINT=http://<host:port>
 ```
 
