@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 import os
-from typing import IO
 
 import requests
 
@@ -35,11 +34,12 @@ def update_component(component_id, training_notebook=None, inference_notebook=No
     return r.json()
 
 
-def create_dataset(file: IO) -> dict:
+def create_dataset(file: bytes, filename: str = "file") -> dict:
     """Creates a dataset from a CSV file using PlatIAgro Datasets API.
 
     Args:
-        file (IO): file object.
+        file (bytes): file object.
+        filename (str, optional): filename. Defaults to "file".
 
     Returns:
         dict: The dataset details: name, columns, and filename.
@@ -47,7 +47,7 @@ def create_dataset(file: IO) -> dict:
     Raises:
         HTTPError: When the request did not succeed.
     """
-    files = {"file": file}
+    files = {"file": (filename, file)}
     r = requests.post(f"{DATASETS_ENDPOINT}/datasets", files=files)
     r.raise_for_status()
     return r.json()

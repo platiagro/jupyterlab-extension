@@ -31,10 +31,10 @@ start_services:
 	docker run --name datasets --restart=always -d -p 8081:8080 -e MINIO_ENDPOINT=minio:9000 -e MINIO_ACCESS_KEY=minio -e MINIO_SECRET_KEY=minio123 --network services platiagro/datasets:0.0.2 --enable-cors --debug
 
 stop_services:
-	-docker network rm services
 	-docker rm -f mysql
 	-docker rm -f minio
 	-docker rm -f datasets
 	-docker rm -f projects
+	-docker network rm services
 
 all: install build launch

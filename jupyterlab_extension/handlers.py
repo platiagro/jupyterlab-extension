@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 import json
 
-from io import BytesIO
 from jupyter_client.jsonutil import date_default
 from notebook.base.handlers import APIHandler
 from notebook.utils import url_path_join
@@ -31,7 +30,7 @@ class RouteHandler(APIHandler):
         )
         if "file" in self.request.files:
             file = self.request.files["file"][0]
-            response = create_dataset(file=file["body"])
+            response = create_dataset(file=file["body"], filename=file["filename"])
             if response is not None:
                 self.set_status(200)
                 self.set_header("Content-Type", "application/json")
@@ -43,6 +42,7 @@ class RouteHandler(APIHandler):
         else:
             self.set_status(400)
             self.finish(u"No file in request")
+
 
 def setup_handlers(web_app):
     host_pattern = ".*$"
