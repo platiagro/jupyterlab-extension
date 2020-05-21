@@ -40,6 +40,8 @@ const extension: JupyterFrontEndPlugin<void> = {
     addCommands(app, nbtracker);
 
     addMenuItems(mainMenu);
+
+    addContextMenuItems(app);
   }
 };
 
@@ -94,6 +96,33 @@ function addMenuItems(mainMenu: IMainMenu) {
       command: CommandIDs.setParameter,
     }
   ], 20);
+}
+
+/**
+ * Add new context menu items to an existing menu
+ */
+function addContextMenuItems(app: JupyterFrontEnd) {
+
+  app.contextMenu.addItem({
+    type: 'separator',
+    selector: '.jp-Notebook',
+    rank: 20
+  });
+  app.contextMenu.addItem({
+    command: CommandIDs.setDataset,
+    selector: '.jp-Notebook',
+    rank: 21
+  });
+  app.contextMenu.addItem({
+    command: CommandIDs.setParameter,
+    selector: '.jp-Notebook',
+    rank: 22
+  });
+  app.contextMenu.addItem({
+    type: 'separator',
+    selector: '.jp-Notebook',
+    rank: 23
+  });
 }
 
 export default extension;
