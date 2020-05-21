@@ -1,4 +1,5 @@
 import {
+  IRouter,
   JupyterFrontEnd,
   JupyterFrontEndPlugin
 } from '@jupyterlab/application';
@@ -13,12 +14,15 @@ import { DatasetActions } from './dataset';
 
 import { ParameterActions } from './parameter';
 
+import { UrlActions } from './url';
+
 /**
  * The command IDs used by the extension.
  */
 export namespace CommandIDs {
   export const setDataset = 'platiagro:setDataset';
   export const setParameter = 'platiagro:setParameter';
+  export const openNotebooks = 'platiagro:openNotebooks';
 }
 
 /**
@@ -27,21 +31,25 @@ export namespace CommandIDs {
 const extension: JupyterFrontEndPlugin<void> = {
   id: 'jupyterlab-extension',
   autoStart: true,
-  requires: [IMainMenu, INotebookTracker],
+  requires: [JupyterFrontEnd.IPaths, IMainMenu, INotebookTracker, IRouter],
   activate: (
     app: JupyterFrontEnd,
+    paths: JupyterFrontEnd.IPaths,
     mainMenu: IMainMenu,
-    nbtracker: INotebookTracker
+    nbtracker: INotebookTracker,
+    router: IRouter
   ) => {
     console.log('JupyterLab extension @platiagro/jupyterlab-extension is activated!');
 
-    addToolbarItems(app)
+    addToolbarItems(app);
 
-    addCommands(app, nbtracker);
+    addCommands(app, paths, nbtracker, router);
 
-    addMenuItems(mainMenu);
+    addMainMenuItems(mainMenu);
 
     addContextMenuItems(app);
+
+    addRouteHandlers(router);
   }
 };
 
@@ -49,13 +57,18 @@ const extension: JupyterFrontEndPlugin<void> = {
  * Add a widget extension to the registry
  */
 function addToolbarItems(app: JupyterFrontEnd) {
-    app.docRegistry.addWidgetExtension('Notebook', new ToolbarWidgetExtension());
+  app.docRegistry.addWidgetExtension('Notebook', new ToolbarWidgetExtension());
 }
 
 /**
  * Add the commands for the jupyterlab-extension extension
  */
-function addCommands(app: JupyterFrontEnd, nbtracker: INotebookTracker) {
+function addCommands(
+  app: JupyterFrontEnd,
+  paths: JupyterFrontEnd.IPaths,
+  nbtracker: INotebookTracker,
+  router: IRouter
+) {
 
   /**
    * Whether there is an active notebook.
@@ -82,12 +95,20 @@ function addCommands(app: JupyterFrontEnd, nbtracker: INotebookTracker) {
     },
     isEnabled
   });
+
+  app.commands.addCommand(CommandIDs.openNotebooks, {
+    label: 'Open all notebooks…',
+    execute: () => {
+      UrlActions.openNotebooks(app, paths, router);
+    },
+    isEnabled
+  });
 }
 
 /**
  * Add new menu items to an existing menu
  */
-function addMenuItems(mainMenu: IMainMenu) {
+function addMainMenuItems(mainMenu: IMainMenu) {
   mainMenu.editMenu.addGroup([
     {
       command: CommandIDs.setDataset,
@@ -122,6 +143,17 @@ function addContextMenuItems(app: JupyterFrontEnd) {
     type: 'separator',
     selector: '.jp-Notebook',
     rank: 23
+  });
+}
+
+/**
+ * Add new URL Functions
+ */
+function addRouteHandlers(router: IRouter) {
+  router.register({
+    command: CommandIDs.openNotebooks,
+    pattern: /(\?open=.*?|\&open=.*?)($|&)/,
+    rank: 10 // High priority: 10:100.
   });
 }
 

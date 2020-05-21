@@ -1,4 +1,10 @@
 .PHONY: build
+.EXPORT_ALL_VARIABLES:
+DATASETS_ENDPOINT = "http://localhost:8081"
+PROJECTS_ENDPOINT = "http://localhost:8080"
+
+NODE_ENV = test
+
 install:
 	# Install server extension
 	pip install -e .
