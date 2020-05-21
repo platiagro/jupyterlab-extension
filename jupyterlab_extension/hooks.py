@@ -2,6 +2,8 @@
 import json
 import re
 
+from werkzeug.exceptions import NotFound
+
 from .services import update_component
 
 
@@ -20,10 +22,13 @@ def post_save(model, os_path, contents_manager, **kwargs):
         with open(os_path) as f:
             notebook = json.load(f)
 
-        if notebook_type == "Training":
-            update_component(component_id, training_notebook=notebook)
-        else:
-            update_component(component_id, inference_notebook=notebook)
+        try:
+            if notebook_type == "Training":
+                update_component(component_id, training_notebook=notebook)
+            else:
+                update_component(component_id, inference_notebook=notebook)
+        except NotFound:
+            pass
 
 
 def setup_hooks(web_app):

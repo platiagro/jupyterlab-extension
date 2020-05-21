@@ -22,7 +22,7 @@ export class ToolbarWidgetExtension
     // adds a toolbarbutton for dataset upload
     const uploader = new ToolbarButton({
       icon: setDatasetIcon,
-      onClick: async () => {
+      onClick: async (): Promise<void> => {
         DatasetActions.showDialog(panel.content);
       },
       tooltip: 'Upload a CSV file and set the dataset name'
@@ -33,7 +33,7 @@ export class ToolbarWidgetExtension
     // adds a toolbarbutton for parameter declaration
     const parameter = new ToolbarButton({
       icon: setParameterIcon,
-      onClick: async () => {
+      onClick: async (): Promise<void> => {
         ParameterActions.showDialog(panel.content);
       },
       tooltip: 'Add or edit a parameter'

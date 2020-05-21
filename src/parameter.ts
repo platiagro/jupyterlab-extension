@@ -1,9 +1,6 @@
 import { Widget } from '@lumino/widgets';
 
-import {
-  showDialog as showDialogBase,
-  Dialog
-} from '@jupyterlab/apputils';
+import { showDialog as showDialogBase, Dialog } from '@jupyterlab/apputils';
 
 // import { AddWidget } from '@jupyterlab/celltags';
 
@@ -17,18 +14,23 @@ import setParameterSvgstr from '../style/icons/set-parameter.svg';
  * A namespace for `ParameterActions` static methods.
  */
 export namespace ParameterActions {
-
   /**
    * Show the dialog to set a parameter.
    *
    * @param notebook - The target notebook widget.
    * @param parameter - The initial parameter values to show in the dialog.
    */
-  export async function showDialog(
+  export const showDialog = async (
     notebook: Notebook,
-    parameter: any = { name: '', variableType: '', fieldType: '', options: [], label: '', description: '' }
-  ) {
-
+    parameter: any = {
+      name: '',
+      variableType: '',
+      fieldType: '',
+      options: [],
+      label: '',
+      description: ''
+    }
+  ): Promise<void> => {
     // Open a dialog that hosts a form to set a parameter
     const result = await showDialogBase({
       title: 'Add or edit a parameter',
@@ -39,7 +41,7 @@ export namespace ParameterActions {
     if (result.button.accept) {
       await setParameter(notebook, parameter);
     }
-  }
+  };
 
   /**
    * Set a parameter in the parameters cell.
@@ -47,8 +49,10 @@ export namespace ParameterActions {
    * @param notebook - The notebook widget.
    * @param parameter - The parameter.
    */
-  export async function setParameter(notebook: Notebook, parameter: any) {
-
+  export const setParameter = async (
+    notebook: Notebook,
+    parameter: any
+  ): Promise<void> => {
     // validate required fields
     if (!parameter.name || !parameter.fieldType || !parameter.variableType) {
       await showDialogBase({
@@ -62,9 +66,10 @@ export namespace ParameterActions {
     }
 
     // get the index of first cell that has a tag 'parameters'
-    const index = notebook.widgets.findIndex(cell =>
-      (cell.model.metadata.get('tags') as string[])?.includes('parameters')
-    );
+    const index = notebook.widgets.findIndex(cell => {
+      const tags = cell.model.metadata.get('tags') as string[];
+      return tags === null ? false : tags.includes('parameters');
+    });
 
     // build the parameter source text
     const newsource = buildParameterText(parameter);
@@ -88,23 +93,28 @@ export namespace ParameterActions {
       newcell.metadata.set('tags', ['parameters']);
       notebook.model.cells.push(newcell);
     }
-  }
+  };
 
   /**
    * Build parameter text in the format of Google Colaboratory Forms.
    *
    * @param parameter - The parameter.
    */
-  function buildParameterText(parameter: any) {
-
-    let text = `${parameter.name} = `
+  const buildParameterText = (parameter: any): string => {
+    let text = `${parameter.name} = `;
 
     // add initial values for each type
-    if (parameter.variableType == 'string' || parameter.variableType == 'feature') {
-      text += (parameter.value) ? `"${parameter.value}"` : '""';
-    } else if (parameter.variableType == 'integer' || parameter.variableType == 'number') {
-      text += (parameter.value) ? `${parameter.value}` : '0';
-    } else if (parameter.variableType == 'boolean') {
+    if (
+      parameter.variableType === 'string' ||
+      parameter.variableType === 'feature'
+    ) {
+      text += parameter.value ? `"${parameter.value}"` : '""';
+    } else if (
+      parameter.variableType === 'integer' ||
+      parameter.variableType === 'number'
+    ) {
+      text += parameter.value ? `${parameter.value}` : '0';
+    } else if (parameter.variableType === 'boolean') {
       text += 'True';
     }
 
@@ -114,19 +124,19 @@ export namespace ParameterActions {
       text += ` [${parameter.options}]`;
     }
 
-    text += ` {type:"${parameter.variableType}"`
+    text += ` {type:"${parameter.variableType}"`;
 
     if (parameter.label) {
-      text += `,label:"${parameter.label}"`
+      text += `,label:"${parameter.label}"`;
     }
 
     if (parameter.description) {
-      text += `,description:"${parameter.description}"`
+      text += `,description:"${parameter.description}"`;
     }
 
-    text += '}'
+    text += '}';
     return text;
-  }
+  };
 }
 
 /**
@@ -146,7 +156,7 @@ class DialogBody extends Widget {
     this.buildForm(parameter);
   }
 
-  buildForm(parameter: any) {
+  buildForm(parameter: any): void {
     const body = document.createElement('div');
     body.className = 'modal-large';
 
@@ -201,7 +211,14 @@ class DialogBody extends Widget {
     variableTypeTitle.textContent = 'Variable type:';
     this.variableTypeSelect = document.createElement('select');
     this.variableTypeSelect.name = 'variableType';
-    const variableTypeOptions = ['', 'string', 'integer', 'number', 'boolean', 'feature'];
+    const variableTypeOptions = [
+      '',
+      'string',
+      'integer',
+      'number',
+      'boolean',
+      'feature'
+    ];
     variableTypeOptions.forEach(item => {
       const option = document.createElement('option');
       option.value = item;
@@ -244,7 +261,7 @@ class DialogBody extends Widget {
     this.node.appendChild(body);
   }
 
-  onAfterAttach() {
+  onAfterAttach(): void {
     this.nameInput.addEventListener('keyup', this);
     this.variableTypeSelect.addEventListener('change', this);
     this.fieldTypeSelect.addEventListener('change', this);
@@ -252,7 +269,7 @@ class DialogBody extends Widget {
     this.descriptionTextArea.addEventListener('keyup', this);
   }
 
-  onBeforeDetach() {
+  onBeforeDetach(): void {
     this.nameInput.removeEventListener('keyup', this);
     this.variableTypeSelect.removeEventListener('change', this);
     this.fieldTypeSelect.removeEventListener('change', this);
@@ -271,13 +288,13 @@ class DialogBody extends Widget {
     }
   }
 
-  private _evtKeyUp(event: KeyboardEvent) {
-    let target = event.target as HTMLInputElement;
+  private _evtKeyUp(event: KeyboardEvent): void {
+    const target = event.target as HTMLInputElement;
     this._parameter[target.name] = target.value;
   }
 
-  private _evtChange(event: Event) {
-    let target = event.target as HTMLInputElement;
+  private _evtChange(event: Event): void {
+    const target = event.target as HTMLInputElement;
     this._parameter[target.name] = target.value;
   }
 }

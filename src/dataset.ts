@@ -20,11 +20,15 @@ import setDatasetSvgstr from '../style/icons/set-dataset.svg';
  * A namespace for `DatasetActions` static methods.
  */
 export namespace DatasetActions {
-  export async function showDialog(notebook: Notebook) {
-
+  /**
+   * Show the dialog to set a dataset.
+   *
+   * @param notebook - The target notebook widget.
+   */
+  export const showDialog = async (notebook: Notebook): Promise<void> => {
     // declare an object that will keep the inputted data
     const parameter: any = {
-      file: null,
+      file: null
     };
 
     // Open a dialog that hosts a form to select a file
@@ -38,16 +42,21 @@ export namespace DatasetActions {
       // Call backend to create a dataset using the selected file
       const response = await createDataset(parameter.file);
       if (response) {
-        const parameter = { name: 'dataset', value: response?.name, variableType: 'string', fieldType: 'input' };
+        const parameter = {
+          name: 'dataset',
+          value: response.name === null ? '' : response.name,
+          variableType: 'string',
+          fieldType: 'input'
+        };
         ParameterActions.setParameter(notebook, parameter);
       }
     }
-  }
+  };
 
   /**
    * Call backend to create a dataset using the selected file
    */
-  async function createDataset(file: File) {
+  const createDataset = async (file: File): Promise<any> => {
     try {
       const formData = new FormData();
       formData.append('file', file);
@@ -78,7 +87,7 @@ class DialogBody extends Widget {
     this.buildForm();
   }
 
-  buildForm() {
+  buildForm(): void {
     const body = document.createElement('div');
 
     // Input File
@@ -100,7 +109,7 @@ class DialogBody extends Widget {
   /**
    * The 'change' handler for the input field.
    */
-  private onInputChanged = async () => {
+  private onInputChanged = (): void => {
     const files = Array.prototype.slice.call(this.input.files) as File[];
     this._parameter['file'] = files[0];
   };
@@ -108,7 +117,7 @@ class DialogBody extends Widget {
   /**
    * The 'click' handler for the input field.
    */
-  private onInputClicked = () => {
+  private onInputClicked = (): void => {
     // In order to allow repeated uploads of the same file (with delete in between),
     // we need to clear the input value to trigger a change event.
     this.input.value = '';

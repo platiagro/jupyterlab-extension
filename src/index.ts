@@ -22,7 +22,7 @@ import { UrlActions } from './url';
 export namespace CommandIDs {
   export const setDataset = 'platiagro:setDataset';
   export const setParameter = 'platiagro:setParameter';
-  export const openNotebooks = 'platiagro:openNotebooks';
+  export const openFiles = 'platiagro:openFiles';
 }
 
 /**
@@ -31,15 +31,18 @@ export namespace CommandIDs {
 const extension: JupyterFrontEndPlugin<void> = {
   id: 'jupyterlab-extension',
   autoStart: true,
-  requires: [JupyterFrontEnd.IPaths, IMainMenu, INotebookTracker, IRouter],
+  requires: [JupyterFrontEnd.IPaths, INotebookTracker, IRouter],
+  optional: [IMainMenu],
   activate: (
     app: JupyterFrontEnd,
     paths: JupyterFrontEnd.IPaths,
-    mainMenu: IMainMenu,
     nbtracker: INotebookTracker,
-    router: IRouter
+    router: IRouter,
+    mainMenu: IMainMenu | null
   ) => {
-    console.log('JupyterLab extension @platiagro/jupyterlab-extension is activated!');
+    console.log(
+      'JupyterLab extension @platiagro/jupyterlab-extension is activated!'
+    );
 
     addToolbarItems(app);
 
@@ -56,7 +59,7 @@ const extension: JupyterFrontEndPlugin<void> = {
 /**
  * Add a widget extension to the registry
  */
-function addToolbarItems(app: JupyterFrontEnd) {
+function addToolbarItems(app: JupyterFrontEnd): void {
   app.docRegistry.addWidgetExtension('Notebook', new ToolbarWidgetExtension());
 }
 
@@ -68,8 +71,7 @@ function addCommands(
   paths: JupyterFrontEnd.IPaths,
   nbtracker: INotebookTracker,
   router: IRouter
-) {
-
+): void {
   /**
    * Whether there is an active notebook.
    */
@@ -96,10 +98,10 @@ function addCommands(
     isEnabled
   });
 
-  app.commands.addCommand(CommandIDs.openNotebooks, {
-    label: 'Open all notebooks…',
+  app.commands.addCommand(CommandIDs.openFiles, {
+    label: 'Open files…',
     execute: () => {
-      UrlActions.openNotebooks(app, paths, router);
+      UrlActions.openFiles(app, paths, router);
     },
     isEnabled
   });
@@ -108,22 +110,26 @@ function addCommands(
 /**
  * Add new menu items to an existing menu
  */
-function addMainMenuItems(mainMenu: IMainMenu) {
-  mainMenu.editMenu.addGroup([
-    {
-      command: CommandIDs.setDataset,
-    },
-    {
-      command: CommandIDs.setParameter,
-    }
-  ], 20);
+function addMainMenuItems(mainMenu: IMainMenu | null): void {
+  if (mainMenu) {
+    mainMenu.editMenu.addGroup(
+      [
+        {
+          command: CommandIDs.setDataset
+        },
+        {
+          command: CommandIDs.setParameter
+        }
+      ],
+      20
+    );
+  }
 }
 
 /**
  * Add new context menu items to an existing menu
  */
-function addContextMenuItems(app: JupyterFrontEnd) {
-
+function addContextMenuItems(app: JupyterFrontEnd): void {
   app.contextMenu.addItem({
     type: 'separator',
     selector: '.jp-Notebook',
@@ -149,10 +155,10 @@ function addContextMenuItems(app: JupyterFrontEnd) {
 /**
  * Add new URL Functions
  */
-function addRouteHandlers(router: IRouter) {
+function addRouteHandlers(router: IRouter): void {
   router.register({
-    command: CommandIDs.openNotebooks,
-    pattern: /(\?open=.*?|\&open=.*?)($|&)/,
+    command: CommandIDs.openFiles,
+    pattern: /(\?open=.*?|&open=.*?)($|&)/,
     rank: 10 // High priority: 10:100.
   });
 }
