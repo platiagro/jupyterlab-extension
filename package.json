@@ -80,5 +80,8 @@
       }
     },
     "extension": true
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }
