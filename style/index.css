@@ -1,0 +1,13 @@
+.modal-large {
+  min-width: 400px;
+}
+
+.left, .right {
+  display: inline-block;
+  vertical-align: top;
+  width: 50%;
+}
+
+.jp-input-wrapper {
+  margin-bottom: 12px;
+}
