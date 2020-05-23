@@ -32,3 +32,22 @@ def update_component(component_id, training_notebook=None, inference_notebook=No
     r = requests.patch(f"{PROJECTS_ENDPOINT}/components/{component_id}", json=json)
     r.raise_for_status()
     return r.json()
+
+
+def create_dataset(file: bytes, filename: str = "file") -> dict:
+    """Creates a dataset from a CSV file using PlatIAgro Datasets API.
+
+    Args:
+        file (bytes): file object.
+        filename (str, optional): filename. Defaults to "file".
+
+    Returns:
+        dict: The dataset details: name, columns, and filename.
+
+    Raises:
+        HTTPError: When the request did not succeed.
+    """
+    files = {"file": (filename, file)}
+    r = requests.post(f"{DATASETS_ENDPOINT}/datasets", files=files)
+    r.raise_for_status()
+    return r.json()

@@ -20,5 +20,6 @@
     "target": "es2017",
     "types": []
   },
+  "files": ["src/svg.d.ts"],
   "include": ["src/*"]
 }
