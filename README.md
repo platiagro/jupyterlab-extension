@@ -97,3 +97,10 @@ jupyter lab --watch
 pip uninstall jupyterlab_extension
 jupyter labextension uninstall @platiagro/jupyterlab-extension
 ```
+
+### Publish to npmjs.org
+
+```bash
+jlpm login
+jlpm publish --access=public
+```
