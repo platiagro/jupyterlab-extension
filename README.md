@@ -19,7 +19,7 @@ for the frontend extension.
 Note: You will need NodeJS to install the extension.
 
 ```bash
-pip install jupyterlab_extension
+pip install git+https://github.com/platiagro/jupyterlab-extension.git
 jupyter lab build
 ```
 
