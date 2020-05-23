@@ -29,6 +29,7 @@ jstargets = [
     os.path.join(HERE, "lib", "dataset.js"),
     os.path.join(HERE, "lib", "parameter.js"),
     os.path.join(HERE, "lib", "server-api.js"),
+    os.path.join(HERE, "lib", "url.js"),
 ]
 
 package_data_spec = {

@@ -1,4 +1,5 @@
 import {
+  IRouter,
   JupyterFrontEnd,
   JupyterFrontEndPlugin
 } from '@jupyterlab/application';
@@ -12,6 +13,8 @@ import { ToolbarWidgetExtension } from './widget-extensions';
 import { DatasetActions } from './dataset';
 
 import { ParameterActions } from './parameter';
+
+import { UrlActions } from './url';
 
 /**
  * The command IDs used by the extension.
@@ -28,11 +31,13 @@ export namespace CommandIDs {
 const extension: JupyterFrontEndPlugin<void> = {
   id: 'jupyterlab-extension',
   autoStart: true,
-  requires: [INotebookTracker],
+  requires: [JupyterFrontEnd.IPaths, INotebookTracker, IRouter],
   optional: [IMainMenu],
   activate: (
     app: JupyterFrontEnd,
+    paths: JupyterFrontEnd.IPaths,
     nbtracker: INotebookTracker,
+    router: IRouter,
     mainMenu: IMainMenu | null
   ) => {
     console.log(
@@ -41,11 +46,13 @@ const extension: JupyterFrontEndPlugin<void> = {
 
     addToolbarItems(app);
 
-    addCommands(app, nbtracker);
+    addCommands(app, paths, nbtracker, router);
 
     addMainMenuItems(mainMenu);
 
     addContextMenuItems(app);
+
+    addRouteHandlers(router);
   }
 };
 
@@ -59,7 +66,12 @@ function addToolbarItems(app: JupyterFrontEnd): void {
 /**
  * Add the commands for the jupyterlab-extension extension
  */
-function addCommands(app: JupyterFrontEnd, nbtracker: INotebookTracker): void {
+function addCommands(
+  app: JupyterFrontEnd,
+  paths: JupyterFrontEnd.IPaths,
+  nbtracker: INotebookTracker,
+  router: IRouter
+): void {
   /**
    * Whether there is an active notebook.
    */
@@ -82,6 +94,14 @@ function addCommands(app: JupyterFrontEnd, nbtracker: INotebookTracker): void {
     label: 'Add or edit a parameter',
     execute: () => {
       ParameterActions.showDialog(nbtracker.currentWidget.content);
+    },
+    isEnabled
+  });
+
+  app.commands.addCommand(CommandIDs.openFiles, {
+    label: 'Open files…',
+    execute: () => {
+      UrlActions.openFiles(app, paths, router);
     },
     isEnabled
   });
@@ -129,6 +149,17 @@ function addContextMenuItems(app: JupyterFrontEnd): void {
     type: 'separator',
     selector: '.jp-Notebook',
     rank: 23
+  });
+}
+
+/**
+ * Add new URL Functions
+ */
+function addRouteHandlers(router: IRouter): void {
+  router.register({
+    command: CommandIDs.openFiles,
+    pattern: /(\?open=.*?|&open=.*?)($|&)/,
+    rank: 10 // High priority: 10:100.
   });
 }
 
