@@ -8,6 +8,8 @@ import { NotebookPanel, INotebookModel } from '@jupyterlab/notebook';
 
 import { setDatasetIcon, DatasetActions } from './dataset';
 
+import { setParameterIcon, ParameterActions } from './parameter';
+
 /**
  * A notebook widget extension that adds buttons to the toolbar.
  */
@@ -27,6 +29,17 @@ export class ToolbarWidgetExtension
     });
 
     panel.toolbar.insertAfter('cellType', 'setDataset', uploader);
+
+    // adds a toolbarbutton for parameter declaration
+    const parameter = new ToolbarButton({
+      icon: setParameterIcon,
+      onClick: async (): Promise<void> => {
+        ParameterActions.showDialog(panel.content);
+      },
+      tooltip: 'Add or edit a parameter'
+    });
+
+    panel.toolbar.insertAfter('setDataset', 'setParameter', parameter);
 
     return new DisposableDelegate(() => {
       uploader.dispose();

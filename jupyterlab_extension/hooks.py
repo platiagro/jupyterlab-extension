@@ -2,7 +2,7 @@
 import json
 import re
 
-from werkzeug.exceptions import NotFound
+from requests.exceptions import HTTPError
 
 from .services import update_component
 
@@ -27,7 +27,7 @@ def post_save(model, os_path, contents_manager, **kwargs):
                 update_component(component_id, training_notebook=notebook)
             else:
                 update_component(component_id, inference_notebook=notebook)
-        except NotFound:
+        except HTTPError:
             pass
 
 

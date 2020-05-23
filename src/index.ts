@@ -11,6 +11,8 @@ import { ToolbarWidgetExtension } from './widget-extensions';
 
 import { DatasetActions } from './dataset';
 
+import { ParameterActions } from './parameter';
+
 /**
  * The command IDs used by the extension.
  */
@@ -75,6 +77,14 @@ function addCommands(app: JupyterFrontEnd, nbtracker: INotebookTracker): void {
     },
     isEnabled
   });
+
+  app.commands.addCommand(CommandIDs.setParameter, {
+    label: 'Add or edit a parameter',
+    execute: () => {
+      ParameterActions.showDialog(nbtracker.currentWidget.content);
+    },
+    isEnabled
+  });
 }
 
 /**
@@ -86,6 +96,9 @@ function addMainMenuItems(mainMenu: IMainMenu | null): void {
       [
         {
           command: CommandIDs.setDataset
+        },
+        {
+          command: CommandIDs.setParameter
         }
       ],
       20
@@ -106,6 +119,11 @@ function addContextMenuItems(app: JupyterFrontEnd): void {
     command: CommandIDs.setDataset,
     selector: '.jp-Notebook',
     rank: 21
+  });
+  app.contextMenu.addItem({
+    command: CommandIDs.setParameter,
+    selector: '.jp-Notebook',
+    rank: 22
   });
   app.contextMenu.addItem({
     type: 'separator',
