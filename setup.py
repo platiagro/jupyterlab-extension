@@ -28,6 +28,9 @@ jstargets = [
     os.path.join(HERE, "lib", "widget-extensions.js"),
     os.path.join(HERE, "lib", "dataset.js"),
     os.path.join(HERE, "lib", "parameter.js"),
+    os.path.join(HERE, "lib", "dropdown-options.js"),
+    os.path.join(HERE, "lib", "add-widget.js"),
+    os.path.join(HERE, "lib", "option-widget.js"),
     os.path.join(HERE, "lib", "server-api.js"),
     os.path.join(HERE, "lib", "url.js"),
 ]

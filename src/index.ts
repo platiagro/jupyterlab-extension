@@ -83,7 +83,7 @@ function addCommands(
   }
 
   app.commands.addCommand(CommandIDs.setDataset, {
-    label: 'Upload a CSV file and set the dataset name',
+    label: 'Upload File and Set Dataset Name',
     execute: () => {
       DatasetActions.showDialog(nbtracker.currentWidget.content);
     },
@@ -91,7 +91,7 @@ function addCommands(
   });
 
   app.commands.addCommand(CommandIDs.setParameter, {
-    label: 'Add or edit a parameter',
+    label: 'Add Parameter',
     execute: () => {
       ParameterActions.showDialog(nbtracker.currentWidget.content);
     },
@@ -99,7 +99,7 @@ function addCommands(
   });
 
   app.commands.addCommand(CommandIDs.openFiles, {
-    label: 'Open files…',
+    label: 'Open Files…',
     execute: () => {
       UrlActions.openFiles(app, paths, router);
     },

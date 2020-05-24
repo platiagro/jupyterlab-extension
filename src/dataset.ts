@@ -33,7 +33,7 @@ export namespace DatasetActions {
 
     // Open a dialog that hosts a form to select a file
     const result = await showDialogBase({
-      title: 'Upload a CSV file and set the dataset name',
+      title: 'Upload File and Set Dataset Name',
       body: new DialogBody(parameter),
       buttons: [Dialog.cancelButton(), Dialog.okButton()]
     });
@@ -100,7 +100,6 @@ class DialogBody extends Widget {
     this.input.onclick = this.onInputClicked;
     this.input.onchange = this.onInputChanged;
     body.appendChild(title);
-    body.appendChild(document.createElement('br'));
     body.appendChild(this.input);
 
     this.node.appendChild(body);

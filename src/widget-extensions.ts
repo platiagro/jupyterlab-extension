@@ -25,7 +25,7 @@ export class ToolbarWidgetExtension
       onClick: async (): Promise<void> => {
         DatasetActions.showDialog(panel.content);
       },
-      tooltip: 'Upload a CSV file and set the dataset name'
+      tooltip: 'Upload File and Set Dataset Name'
     });
 
     panel.toolbar.insertAfter('cellType', 'setDataset', uploader);
@@ -36,7 +36,7 @@ export class ToolbarWidgetExtension
       onClick: async (): Promise<void> => {
         ParameterActions.showDialog(panel.content);
       },
-      tooltip: 'Add or edit a parameter'
+      tooltip: 'Add Parameter'
     });
 
     panel.toolbar.insertAfter('setDataset', 'setParameter', parameter);

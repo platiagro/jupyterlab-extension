@@ -6,6 +6,8 @@ import { Notebook } from '@jupyterlab/notebook';
 
 import { LabIcon } from '@jupyterlab/ui-components';
 
+import { DropdownOptions } from './dropdown-options';
+
 import setParameterSvgstr from '../style/icons/set-parameter.svg';
 
 /**
@@ -25,13 +27,14 @@ export namespace ParameterActions {
       variableType: '',
       fieldType: '',
       options: [],
+      multiple: false,
       label: '',
       description: ''
     }
   ): Promise<void> => {
     // Open a dialog that hosts a form to set a parameter
     const result = await showDialogBase({
-      title: 'Add or edit a parameter',
+      title: 'Add Parameter',
       body: new DialogBody(parameter),
       buttons: [Dialog.cancelButton(), Dialog.okButton()]
     });
@@ -101,6 +104,12 @@ export namespace ParameterActions {
   const buildParameterText = (parameter: any): string => {
     let text = `${parameter.name} = `;
 
+    // if value is empty and there are options;
+    // then set value = options[0]
+    if (!parameter.value && parameter.options.length > 0) {
+      parameter.value = parameter.options[0];
+    }
+
     // add initial values for each type
     if (
       parameter.variableType === 'string' ||
@@ -118,11 +127,22 @@ export namespace ParameterActions {
 
     text += ' #@param';
 
-    if (parameter.options && parameter.options.length) {
-      text += ` [${parameter.options}]`;
+    if (parameter.options && parameter.options.length > 0) {
+      let options = parameter.options;
+      if (
+        parameter.variableType === 'string' ||
+        parameter.variableType === 'feature'
+      ) {
+        options = options.map((o: string) => `"${o}"`);
+      }
+      text += ` [${options.join(',')}]`;
     }
 
     text += ` {type:"${parameter.variableType}"`;
+
+    if (parameter.options && parameter.options.length > 0) {
+      text += `,multiple:${parameter.multiple}`;
+    }
 
     if (parameter.label) {
       text += `,label:"${parameter.label}"`;
@@ -143,10 +163,11 @@ export namespace ParameterActions {
 class DialogBody extends Widget {
   private _parameter: any;
   private nameInput: HTMLInputElement;
-  private variableTypeSelect: HTMLSelectElement;
-  private fieldTypeSelect: HTMLSelectElement;
   private labelInput: HTMLInputElement;
   private descriptionTextArea: HTMLTextAreaElement;
+  private variableTypeSelect: HTMLSelectElement;
+  private fieldTypeSelect: HTMLSelectElement;
+  private dropdownOptions: DropdownOptions;
 
   constructor(parameter: any) {
     super();
@@ -172,9 +193,7 @@ class DialogBody extends Widget {
     this.nameInput.name = 'name';
     this.nameInput.value = parameter.name;
     nameWrapper.appendChild(nameTitle);
-    nameWrapper.appendChild(document.createElement('br'));
     nameWrapper.appendChild(this.nameInput);
-    nameWrapper.appendChild(document.createElement('br'));
     left.appendChild(nameWrapper);
 
     // Label Input
@@ -186,9 +205,7 @@ class DialogBody extends Widget {
     this.labelInput.name = 'label';
     this.labelInput.value = parameter.label;
     labelWrapper.appendChild(labelTitle);
-    labelWrapper.appendChild(document.createElement('br'));
     labelWrapper.appendChild(this.labelInput);
-    labelWrapper.appendChild(document.createElement('br'));
     left.appendChild(labelWrapper);
 
     // Description TextArea
@@ -200,7 +217,6 @@ class DialogBody extends Widget {
     this.descriptionTextArea.name = 'description';
     this.descriptionTextArea.value = parameter.description;
     descriptionWrapper.appendChild(descriptionTitle);
-    descriptionWrapper.appendChild(document.createElement('br'));
     descriptionWrapper.appendChild(this.descriptionTextArea);
     left.appendChild(descriptionWrapper);
 
@@ -225,7 +241,6 @@ class DialogBody extends Widget {
       this.variableTypeSelect.appendChild(option);
     });
     right.appendChild(variableTypeTitle);
-    right.appendChild(document.createElement('br'));
     right.appendChild(this.variableTypeSelect);
 
     // Field Type Select
@@ -242,8 +257,15 @@ class DialogBody extends Widget {
       this.fieldTypeSelect.appendChild(option);
     });
     right.appendChild(fieldTypeTitle);
-    right.appendChild(document.createElement('br'));
     right.appendChild(this.fieldTypeSelect);
+
+    // Dropdown Options
+    this.dropdownOptions = new DropdownOptions(parameter);
+    if (parameter.fieldType !== 'dropdown') {
+      this.dropdownOptions.hide();
+    }
+    right.appendChild(this.dropdownOptions.node);
+    this.dropdownOptions.activate();
 
     body.appendChild(left);
     body.appendChild(right);
@@ -252,18 +274,18 @@ class DialogBody extends Widget {
 
   onAfterAttach(): void {
     this.nameInput.addEventListener('keyup', this);
-    this.variableTypeSelect.addEventListener('change', this);
-    this.fieldTypeSelect.addEventListener('change', this);
     this.labelInput.addEventListener('keyup', this);
     this.descriptionTextArea.addEventListener('keyup', this);
+    this.variableTypeSelect.addEventListener('change', this);
+    this.fieldTypeSelect.addEventListener('change', this);
   }
 
   onBeforeDetach(): void {
     this.nameInput.removeEventListener('keyup', this);
-    this.variableTypeSelect.removeEventListener('change', this);
-    this.fieldTypeSelect.removeEventListener('change', this);
     this.labelInput.removeEventListener('keyup', this);
     this.descriptionTextArea.removeEventListener('keyup', this);
+    this.variableTypeSelect.removeEventListener('change', this);
+    this.fieldTypeSelect.removeEventListener('change', this);
   }
 
   handleEvent(event: Event): void {
@@ -283,8 +305,23 @@ class DialogBody extends Widget {
   }
 
   private _evtChange(event: Event): void {
-    const target = event.target as HTMLInputElement;
-    this._parameter[target.name] = target.value;
+    const target = event.target as HTMLSelectElement;
+    const value = target.options[target.selectedIndex].text;
+    this._parameter[target.name] = value;
+
+    if (target.name === 'fieldType') {
+      this._fieldTypeChange(event);
+    }
+  }
+
+  private _fieldTypeChange(event: Event): void {
+    const target = event.target as HTMLSelectElement;
+    const value = target.options[target.selectedIndex].value;
+    if (value === 'dropdown') {
+      this.dropdownOptions.show();
+    } else {
+      this.dropdownOptions.hide();
+    }
   }
 }
 
