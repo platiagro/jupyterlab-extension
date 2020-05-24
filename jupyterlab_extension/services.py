@@ -19,6 +19,7 @@ def update_component(component_id, training_notebook=None, inference_notebook=No
         dict: The component details.
 
     Raises:
+        ConnectionError: When the request did not succeed.
         HTTPError: When the request did not succeed.
     """
     json = {}
@@ -45,6 +46,7 @@ def create_dataset(file: bytes, filename: str = "file") -> dict:
         dict: The dataset details: name, columns, and filename.
 
     Raises:
+        ConnectionError: When the request did not succeed.
         HTTPError: When the request did not succeed.
     """
     files = {"file": (filename, file)}
