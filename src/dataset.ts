@@ -44,7 +44,7 @@ export namespace DatasetActions {
       if (response) {
         const parameter = {
           name: 'dataset',
-          value: response.name === null ? '' : response.name,
+          value: response.name === undefined ? '' : response.name,
           variableType: 'string',
           fieldType: 'input'
         };

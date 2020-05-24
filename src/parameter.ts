@@ -69,7 +69,7 @@ export namespace ParameterActions {
     // get the index of first cell that has a tag 'parameters'
     const index = notebook.widgets.findIndex(cell => {
       const tags = cell.model.metadata.get('tags') as string[];
-      return tags === null ? false : tags.includes('parameters');
+      return tags === undefined ? false : tags.includes('parameters');
     });
 
     // build the parameter source text
