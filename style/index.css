@@ -1,0 +1,45 @@
+.modal-large {
+  width: 400px;
+}
+
+.left, .right {
+  display: inline-block;
+  vertical-align: top;
+  width: 50%;
+}
+
+.jp-input-wrapper {
+  margin-bottom: 12px;
+}
+
+.modal-large label {
+  display: block;
+  margin-bottom: 4px;
+}
+
+.modal-large textarea.jp-mod-styled {
+  background: var(--jp-input-background);
+  box-sizing: border-box;
+  border: var(--jp-border-width) solid var(--jp-border-color1);
+  font-size: var(--jp-ui-font-size2);
+  font-family: var(--jp-ui-font-family);
+  color: var(--jp-ui-font-color0);
+  resize: none;
+  width: 179px;
+  padding-left: 7px;
+  padding-right: 7px;
+}
+
+.add-tag.jp-mod-styled {
+  border: none;
+  outline: none;
+  font-size: var(--jp-ui-font-size-1);
+  color: var(--jp-ui-font-color2);
+  background-color: var(--jp-layout-color1);
+  box-sizing: content-box;
+}
+
+.add-tag.jp-mod-styled:focus {
+  border: none;
+  box-shadow: none;
+}
