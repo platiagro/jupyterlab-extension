@@ -19,7 +19,7 @@ for the frontend extension.
 Note: You will need NodeJS to install the extension.
 
 ```bash
-pip install git+https://github.com/platiagro/jupyterlab-extension.git
+pip install jupyterlab_extension
 jupyter lab build
 ```
 
@@ -47,13 +47,6 @@ jupyter lab build
 ```
 
 ## Contributing
-
-### Set env variables
-
-```bash
-export DATASETS_ENDPOINT=http://<host:port>
-export PROJECTS_ENDPOINT=http://<host:port>
-```
 
 ### Install
 
@@ -96,11 +89,4 @@ jupyter lab --watch
 ```bash
 pip uninstall jupyterlab_extension
 jupyter labextension uninstall @platiagro/jupyterlab-extension
-```
-
-### Publish to npmjs.org
-
-```bash
-jlpm login
-jlpm publish --access=public
 ```
