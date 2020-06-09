@@ -13,7 +13,7 @@ def post_save(model, os_path, contents_manager, **kwargs):
     if model["type"] != "notebook":
         return
 
-    match = re.search(r"components/(.*?)/(Training|Inference).ipynb", os_path)
+    match = re.search(r"components/(.*?)/(Experiment|Deployment).ipynb", os_path)
 
     if match:
         component_id = match.group(1)
@@ -23,10 +23,10 @@ def post_save(model, os_path, contents_manager, **kwargs):
             notebook = json.load(f)
 
         try:
-            if notebook_type == "Training":
-                update_component(component_id, training_notebook=notebook)
+            if notebook_type == "Experiment":
+                update_component(component_id, experiment_notebook=notebook)
             else:
-                update_component(component_id, inference_notebook=notebook)
+                update_component(component_id, deployment_notebook=notebook)
         except (ConnectionError, HTTPError) as e:
             pass
 
