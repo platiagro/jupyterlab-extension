@@ -3,18 +3,36 @@
 }
 
 .left, .right {
+  box-sizing: border-box;
   display: inline-block;
   vertical-align: top;
   width: 50%;
 }
 
+.left {
+  padding-right: 10px;
+}
+
+.right {
+  padding-left: 10px;
+}
+
 .jp-input-wrapper {
   margin-bottom: 12px;
+  padding: 1px;
+}
+
+.modal-large .jp-select-wrapper {
+  height: 30px;
 }
 
 .modal-large label {
   display: block;
   margin-bottom: 4px;
+}
+
+.modal-large input[type=text].jp-mod-styled, .modal-large textarea.jp-mod-styled {
+  width: 100%;
 }
 
 .modal-large textarea.jp-mod-styled {
@@ -25,7 +43,6 @@
   font-family: var(--jp-ui-font-family);
   color: var(--jp-ui-font-color0);
   resize: none;
-  width: 179px;
   padding-left: 7px;
   padding-right: 7px;
 }

@@ -89,6 +89,7 @@ class DialogBody extends Widget {
 
   buildForm(): void {
     const body = document.createElement('div');
+    body.className = 'modal-large';
 
     // Input File
     const title = document.createElement('label');

@@ -191,9 +191,10 @@ class DialogBody extends Widget {
     nameTitle.textContent = 'Variable name:';
     this.nameInput = document.createElement('input');
     this.nameInput.name = 'name';
+    this.nameInput.type = 'text';
     this.nameInput.value = parameter.name;
-    nameWrapper.appendChild(nameTitle);
     nameWrapper.appendChild(this.nameInput);
+    left.appendChild(nameTitle);
     left.appendChild(nameWrapper);
 
     // Label Input
@@ -203,9 +204,10 @@ class DialogBody extends Widget {
     labelTitle.textContent = 'Label:';
     this.labelInput = document.createElement('input');
     this.labelInput.name = 'label';
+    this.labelInput.type = 'text';
     this.labelInput.value = parameter.label;
-    labelWrapper.appendChild(labelTitle);
     labelWrapper.appendChild(this.labelInput);
+    left.appendChild(labelTitle);
     left.appendChild(labelWrapper);
 
     // Description TextArea
@@ -216,8 +218,8 @@ class DialogBody extends Widget {
     this.descriptionTextArea = document.createElement('textarea');
     this.descriptionTextArea.name = 'description';
     this.descriptionTextArea.value = parameter.description;
-    descriptionWrapper.appendChild(descriptionTitle);
     descriptionWrapper.appendChild(this.descriptionTextArea);
+    left.appendChild(descriptionTitle);
     left.appendChild(descriptionWrapper);
 
     // Variable Type Select
