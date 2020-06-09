@@ -7,13 +7,13 @@ DATASETS_ENDPOINT = os.getenv("DATASETS_ENDPOINT", "http://datasets.kubeflow:808
 PROJECTS_ENDPOINT = os.getenv("PROJECTS_ENDPOINT", "http://projects.kubeflow:8080")
 
 
-def update_component(component_id, training_notebook=None, inference_notebook=None) -> dict:
+def update_component(component_id, experiment_notebook=None, deployment_notebook=None) -> dict:
     """Updates a component fro notebook using PlatIAgro Projects API.
 
     Args:
         component_id (str): the component uuid.
-        training_notebook (dict): the training notebook.
-        inference_notebook (dict): the inference notebook.
+        experiment_notebook (dict): the experiment notebook.
+        deployment_notebook (dict): the deployment notebook.
 
     Returns:
         dict: The component details.
@@ -24,11 +24,11 @@ def update_component(component_id, training_notebook=None, inference_notebook=No
     """
     json = {}
 
-    if training_notebook:
-        json["trainingNotebook"] = training_notebook
+    if experiment_notebook:
+        json["experimentNotebook"] = experiment_notebook
 
-    if inference_notebook:
-        json["inferenceNotebook"] = inference_notebook
+    if deployment_notebook:
+        json["deploymentNotebook"] = deployment_notebook
 
     r = requests.patch(f"{PROJECTS_ENDPOINT}/components/{component_id}", json=json)
     r.raise_for_status()
