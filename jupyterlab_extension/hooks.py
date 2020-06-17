@@ -28,7 +28,7 @@ def post_save(model, os_path, contents_manager, **kwargs):
             else:
                 update_component(component_id, deployment_notebook=notebook)
         except (ConnectionError, HTTPError) as e:
-            pass
+            print(str(e))
 
 
 def setup_hooks(web_app):
