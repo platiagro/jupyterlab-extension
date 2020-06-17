@@ -75,7 +75,7 @@ export namespace DatasetActions {
 }
 
 /**
- * A widget which hosts a form to upload a CSV file.
+ * A widget which hosts a form to upload a dataset file.
  */
 class DialogBody extends Widget {
   private _parameter: any;
@@ -96,7 +96,7 @@ class DialogBody extends Widget {
     title.textContent = 'Select a file:';
     this.input = document.createElement('input');
     this.input.type = 'file';
-    this.input.accept = '.csv';
+    this.input.accept = '*';
     this.input.multiple = false;
     this.input.onclick = this.onInputClicked;
     this.input.onchange = this.onInputChanged;
