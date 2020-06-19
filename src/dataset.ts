@@ -3,7 +3,8 @@ import { Widget } from '@lumino/widgets';
 import {
   showDialog as showDialogBase,
   Dialog,
-  showErrorMessage
+  showErrorMessage,
+  Spinner
 } from '@jupyterlab/apputils';
 
 import { Notebook } from '@jupyterlab/notebook';
@@ -57,6 +58,14 @@ export namespace DatasetActions {
    * Call backend to create a dataset using the selected file
    */
   const createDataset = async (file: File): Promise<any> => {
+    const spinner = new Spinner();
+    const spinnerDialogBody = new Widget();
+    spinnerDialogBody.node.appendChild(spinner.node);
+    const spinnerDialog = new Dialog({
+      body: spinnerDialogBody,
+      buttons: []
+    });
+    spinnerDialog.launch();
     try {
       const formData = new FormData();
       formData.append('file', file);
@@ -64,11 +73,13 @@ export namespace DatasetActions {
         method: 'POST',
         body: formData
       });
+      spinnerDialog.dispose();
       return response;
     } catch (error) {
       console.error(
         'The jupyterlab_extension server extension appears to be missing.\n'
       );
+      spinnerDialog.dispose();
       void showErrorMessage('Upload Error', error);
     }
   };
