@@ -41,6 +41,8 @@ export namespace UrlActions {
 
     // open files
     for (const filename of filenames) {
+      // necessary sleep to guarantee the order of opening of the notebooks
+      // because the command docmanager:open is asynchronous
       await sleep(500);
       void app.commands.execute('docmanager:open', {
         path: `${dirpath.substr(1)}/${filename}`
