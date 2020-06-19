@@ -35,12 +35,17 @@ export namespace UrlActions {
       .replace(new RegExp(`^${paths.urls.app}`), '')
       .replace(new RegExp('^/tree'), '');
 
+    const sleep = (milliseconds: number): Promise<void> => {
+      return new Promise(resolve => setTimeout(resolve, milliseconds));
+    };
+
     // open files
-    filenames.forEach((filename: string) => {
+    for (const filename of filenames) {
+      await sleep(500);
       void app.commands.execute('docmanager:open', {
         path: `${dirpath.substr(1)}/${filename}`
       });
-    });
+    }
 
     // clean query string
     delete query['open'];
