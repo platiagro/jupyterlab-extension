@@ -53,3 +53,53 @@ def create_dataset(file: bytes, filename: str = "file") -> dict:
     r = requests.post(f"{DATASETS_ENDPOINT}/datasets", files=files)
     r.raise_for_status()
     return r.json()
+
+
+def generate_name(filename: str, attempt: int = 1, path: str = "/tmp/data") -> str:
+    """Generates a dataset name from a given filename.
+
+    Args:
+        filename (str): source filename.
+        path (str): path to check if name exist.
+        attempt (int, optional): the current attempt of generating a new name.
+
+    Returns:
+        str: new generated dataset name.
+    """
+    name = normalize('NFKD', filename) \
+        .encode('ASCII', 'ignore') \
+        .replace(b' ', b'-') \
+        .decode()
+
+    if attempt > 1:
+        name, extension = os.path.splitext(name)
+        name = f"{name}-{attempt}{extension}"
+
+    try:
+        open(f"{path}/{name}")
+    except FileNotFoundError:
+        return name
+
+    return generate_name(filename, attempt + 1)
+
+
+def create_dataset_locally(file: bytes, filename: str = "file", path: str = "/tmp/data"):
+    """Creates a dataset from a CSV and writes locally.
+
+    Args:
+        file (bytes): file object content.
+        filename (str, optional): file name. Defaults to "file".
+        path (str, optional): path to be writen. Defaults to "/tmp/data".
+
+    Raises:
+        OSError: When the writing did not succeed.
+    """
+    name = generate_name(filename)
+
+    try:
+        with open(f"{path}/{name}", 'wb') as csv_file:
+            csv_file.write(file)
+
+        return {"filename": filename, "name": name}
+    except OSError as e:
+        print(e)
