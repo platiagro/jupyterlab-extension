@@ -8,7 +8,7 @@ import tornado
 from tornado.escape import utf8
 from tornado.httputil import parse_multipart_form_data
 
-from .services import create_dataset
+from .services import create_dataset_locally
 
 
 class RouteHandler(APIHandler):
@@ -30,8 +30,8 @@ class RouteHandler(APIHandler):
         )
         if "file" in self.request.files:
             file = self.request.files["file"][0]
-            response = create_dataset(file=file["body"], filename=file["filename"])
-            if response is not None:
+            response = create_dataset_locally(file=file["body"], filename=file["filename"])
+            if response:
                 self.set_status(200)
                 self.set_header("Content-Type", "application/json")
                 data = json.dumps(response, default=date_default)
