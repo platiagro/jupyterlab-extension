@@ -23,7 +23,7 @@ def post_save(model, os_path, contents_manager, **kwargs):
             notebook = json.load(f)
             metadata = notebook.get('metadata', None)
             if metadata is not None:
-                task_id = metadata.get('uuid', None)
+                task_id = metadata.get('task_id', None)
 
         if task_id is not None:
             try:
