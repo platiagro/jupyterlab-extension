@@ -16,19 +16,23 @@ def post_save(model, os_path, contents_manager, **kwargs):
     match = re.search(r"tasks/(.*?)/(Experiment|Deployment).ipynb", os_path)
 
     if match:
-        task_id = match.group(1)
         notebook_type = match.group(2)
 
+        task_id = None
         with open(os_path) as f:
             notebook = json.load(f)
+            metadata = notebook.get('metadata', None)
+            if metadata is not None:
+                task_id = metadata.get('uuid', None)
 
-        try:
-            if notebook_type == "Experiment":
-                update_task(task_id, experiment_notebook=notebook)
-            else:
-                update_task(task_id, deployment_notebook=notebook)
-        except (ConnectionError, HTTPError) as e:
-            print(str(e))
+        if task_id is not None:
+            try:
+                if notebook_type == "Experiment":
+                    update_task(task_id, experiment_notebook=notebook)
+                else:
+                    update_task(task_id, deployment_notebook=notebook)
+            except (ConnectionError, HTTPError) as e:
+                print(str(e))
 
 
 def setup_hooks(web_app):
