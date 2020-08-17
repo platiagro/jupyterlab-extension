@@ -8,16 +8,16 @@ DATASETS_ENDPOINT = os.getenv("DATASETS_ENDPOINT", "http://datasets.kubeflow:808
 PROJECTS_ENDPOINT = os.getenv("PROJECTS_ENDPOINT", "http://projects.kubeflow:8080")
 
 
-def update_component(component_id, experiment_notebook=None, deployment_notebook=None) -> dict:
-    """Updates a component fro notebook using PlatIAgro Projects API.
+def update_task(task_id, experiment_notebook=None, deployment_notebook=None) -> dict:
+    """Updates a task from notebook using PlatIAgro Projects API.
 
     Args:
-        component_id (str): the component uuid.
+        task_id (str): the task uuid.
         experiment_notebook (dict): the experiment notebook.
         deployment_notebook (dict): the deployment notebook.
 
     Returns:
-        dict: The component details.
+        dict: The task details.
 
     Raises:
         ConnectionError: When the request did not succeed.
@@ -31,7 +31,7 @@ def update_component(component_id, experiment_notebook=None, deployment_notebook
     if deployment_notebook:
         json["deploymentNotebook"] = deployment_notebook
 
-    r = requests.patch(f"{PROJECTS_ENDPOINT}/components/{component_id}", json=json)
+    r = requests.patch(f"{PROJECTS_ENDPOINT}/tasks/{task_id}", json=json)
     r.raise_for_status()
     return r.json()
 
