@@ -13,14 +13,21 @@ def post_save(model, os_path, contents_manager, **kwargs):
     if model["type"] != "notebook":
         return
 
-    match = re.search(r"tasks/(.*?)/(Experiment|Deployment).ipynb", os_path)
+    match = re.search(r"tasks/.*?/(Experiment|Deployment).ipynb", os_path)
 
     if match:
-        task_id = match.group(1)
-        notebook_type = match.group(2)
+        notebook_type = match.group(1)
 
+        task_id = None
         with open(os_path) as f:
             notebook = json.load(f)
+            metadata = notebook.get('metadata', None)
+            if metadata is not None:
+                task_id = metadata.get('task_id', None)
+
+        # only update notebook with task_id exist in metadata
+        if task_id is None:
+            return
 
         try:
             if notebook_type == "Experiment":
