@@ -30,10 +30,13 @@ export namespace UrlActions {
 
     const filenames = query['open'].split(',');
     // get url path, then removes prefixes: `/lab/workspaces/foo`, `/lab`, `/tree`
+    // necessary to replace %20 to blank space because
+    // the command docmanager:open encode the % to %25
     const dirpath = args.path
       .replace(new RegExp(`^${paths.urls.workspaces}/([^?/]+)`), '')
       .replace(new RegExp(`^${paths.urls.app}`), '')
-      .replace(new RegExp('^/tree'), '');
+      .replace(new RegExp('^/tree'), '')
+      .replace(new RegExp('%20', 'gi'), ' ');
 
     const sleep = (milliseconds: number): Promise<void> => {
       return new Promise(resolve => setTimeout(resolve, milliseconds));
