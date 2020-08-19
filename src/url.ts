@@ -30,10 +30,13 @@ export namespace UrlActions {
 
     const filenames = query['open'].split(',');
     // get url path, then removes prefixes: `/lab/workspaces/foo`, `/lab`, `/tree`
-    const dirpath = args.path
+    let dirpath = args.path
       .replace(new RegExp(`^${paths.urls.workspaces}/([^?/]+)`), '')
       .replace(new RegExp(`^${paths.urls.app}`), '')
       .replace(new RegExp('^/tree'), '');
+
+    // necessary to decode path because the command docmanager:open encode the path
+    dirpath = decodeURI(dirpath);
 
     const sleep = (milliseconds: number): Promise<void> => {
       return new Promise(resolve => setTimeout(resolve, milliseconds));
