@@ -43,9 +43,13 @@ export namespace DatasetActions {
       // Call backend to create a dataset using the selected file
       const response = await createDataset(parameter.file);
       if (response) {
+        let parameterValue = '';
+        if (response.name) {
+          parameterValue = '/tmp/data/' + response.name;
+        }
         const parameter = {
           name: 'dataset',
-          value: response.name === undefined ? '' : response.name,
+          value: parameterValue,
           variableType: 'string',
           fieldType: 'input'
         };
