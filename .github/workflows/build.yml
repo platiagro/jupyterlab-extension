@@ -2,7 +2,7 @@ name: Build
 
 on:
   push:
-    branches: master
+    branches: [master]
   pull_request:
     branches: '*'
 
@@ -10,6 +10,40 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
+    - name: Code review tips
+      uses: unsplash/comment-on-pr@master
+      if: ${{ github.event_name == 'pull_request' && github.event.action == 'opened' }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        msg: |
+          ## Dicas para revisão de código
+
+          ### Commits
+          - Título (1a linha do commit): apresentar resumo do que foi alterado/adicionado/removido.
+            ex: adiciona action que salva parametros no backend; exibe rótulo no componente de selecao de dataset;
+          - Descrição (outras linhas): dar mais detalhes de cada alteração:
+            - motivos das alterações
+              ex: havia um bug que causava...; nova funcionalidade que faz isso...; código foi movido para...;
+            - bibliotecas adicionadas e versões (package.json/setup.py)
+              ex: atualiza para requests 2.24.0;
+          - Mensagens auto-explicativas! Quem revisa o código deve entender o que foi feito (e porque foi feito) **sem perguntar para quem fez o commit**.
+          - Não devem ter conflitos. Solicitar que sejam resolvidas as ocorrências de "This branch has conflicts that must be resolved".
+
+          ### Build Github actions COM SUCESSO
+
+          ### TypeScript
+          - Usar Node 12 ou 14.
+          - Remover `console.log`.
+          - Não deixar código-fonte comentado.
+
+          ### Python
+          - Usar Python 3.7
+          - Remover `print`.
+          - Não deixar código-fonte comentado.
+          - f-string `f'text-{variable}'` é melhor que `'text-{}'.format(variable)` e `'text-' + variable`
+          - Métodos que são chamados de outros arquivos `.py` **DEVEM TER Docstring**.
+          - Usar Google Style Python Docstring: https://sphinxcontrib-napoleon.readthedocs.io/en/latest/example_google.html
     - name: Checkout
       uses: actions/checkout@v1
     - name: Install node
