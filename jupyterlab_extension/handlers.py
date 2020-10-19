@@ -30,11 +30,15 @@ class RouteHandler(APIHandler):
         )
         if "file" in self.request.files:
             file = self.request.files["file"][0]
-            response = create_dataset_locally(file=file["body"], filename=file["filename"])
-            if response:
+
+            uploaded_dataset = create_dataset(file=file["body"], filename=file["filename"])
+
+            local_file = create_dataset_locally(
+                file=file["body"], original_filename=file["filename"], filename=uploaded_dataset["file"])
+            if local_file:
                 self.set_status(200)
                 self.set_header("Content-Type", "application/json")
-                data = json.dumps(response, default=date_default)
+                data = json.dumps(local_file, default=date_default)
                 self.finish(data)
             else:
                 self.set_status(500)

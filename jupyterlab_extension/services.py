@@ -84,23 +84,23 @@ def generate_name(filename: str, attempt: int = 1, path: str = "/tmp/data") -> s
     return generate_name(filename, attempt + 1)
 
 
-def create_dataset_locally(file: bytes, filename: str = "file", path: str = "/tmp/data"):
+def create_dataset_locally(file: bytes, original_filename: str = "file", filename: str = "file", path: str = "/tmp/data"):
     """Creates a dataset from a CSV and writes locally.
 
     Args:
         file (bytes): file object content.
+        original_filename (str, optional): original file name. Defaults to "file".
         filename (str, optional): file name. Defaults to "file".
         path (str, optional): path to be writen. Defaults to "/tmp/data".
 
     Raises:
         OSError: When the writing did not succeed.
     """
-    name = generate_name(filename)
 
     try:
-        with open(f"{path}/{name}", 'wb') as csv_file:
+        with open(f"{path}/{filename}", 'wb') as csv_file:
             csv_file.write(file)
 
-        return {"filename": filename, "name": name}
+        return {"filename": original_filename, "name": filename}
     except OSError as e:
         print(e)
