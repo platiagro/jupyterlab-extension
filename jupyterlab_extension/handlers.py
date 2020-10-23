@@ -8,7 +8,7 @@ import tornado
 from tornado.escape import utf8
 from tornado.httputil import parse_multipart_form_data
 
-from .services import create_dataset_locally
+from .services import create_dataset, create_dataset_locally
 
 
 class RouteHandler(APIHandler):
