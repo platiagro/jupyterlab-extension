@@ -34,7 +34,7 @@ class RouteHandler(APIHandler):
             uploaded_dataset = create_dataset(file=file["body"], filename=file["filename"])
 
             local_file = create_dataset_locally(
-                file=file["body"], original_filename=file["filename"], filename=uploaded_dataset["file"])
+                file=file["body"], filename=uploaded_dataset["filename"], name=uploaded_dataset["name"])
             if local_file:
                 self.set_status(200)
                 self.set_header("Content-Type", "application/json")
