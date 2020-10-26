@@ -4,8 +4,8 @@ import requests
 
 from unicodedata import normalize
 
-DATASETS_ENDPOINT = os.getenv("DATASETS_ENDPOINT", "http://datasets.kubeflow:8080")
-PROJECTS_ENDPOINT = os.getenv("PROJECTS_ENDPOINT", "http://projects.kubeflow:8080")
+DATASETS_ENDPOINT = os.getenv("DATASETS_ENDPOINT", "http://datasets.platiagro:8080")
+PROJECTS_ENDPOINT = os.getenv("PROJECTS_ENDPOINT", "http://projects.platiagro:8080")
 
 
 def update_task(task_id, experiment_notebook=None, deployment_notebook=None) -> dict:
