@@ -39,7 +39,6 @@ class RouteHandler(APIHandler):
                 self.set_status(200)
                 self.set_header("Content-Type", "application/json")
                 data = json.dumps(local_file, default=date_default)
-                print("New file uploaded.")
                 self.finish(data)
             else:
                 self.set_status(500)
