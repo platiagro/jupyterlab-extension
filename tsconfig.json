@@ -18,7 +18,7 @@
     "strict": true,
     "strictNullChecks": false,
     "target": "es2017",
-    "types": []
+    "types": ["node"]
   },
   "files": ["src/svg.d.ts"],
   "include": ["src/*"]
