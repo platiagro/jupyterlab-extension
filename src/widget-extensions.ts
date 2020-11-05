@@ -46,15 +46,20 @@ export class ToolbarWidgetExtension
     panel.toolbar.insertAfter('setDataset', 'setParameter', parameter);
 
     // adds a toolbarbutton for local kernel connection declaration
-    const localKernel = new ToolbarButton({
+    const localKernelConnection = new ToolbarButton({
       icon: kernelIcon,
+      label: 'Local Kernel Connection',
       onClick: async (): Promise<void> => {
-        LocalKernelActions.showDialog(panel.content);
+        LocalKernelActions.showDialog(panel);
       },
       tooltip: 'Connect to a Local Kernel'
     });
 
-    panel.toolbar.insertAfter('setParameter', 'setLocalKernel', localKernel);
+    panel.toolbar.insertBefore(
+      'kernelName',
+      'setLocalKernel',
+      localKernelConnection
+    );
 
     return new DisposableDelegate(() => {
       uploader.dispose();
