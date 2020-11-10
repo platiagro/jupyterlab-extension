@@ -1,12 +1,14 @@
 import { Widget } from '@lumino/widgets';
 
-import { NotebookPanel } from '@jupyterlab/notebook';
-
 import { showDialog as showDialogBase, Dialog } from '@jupyterlab/apputils';
+
+import { NotebookPanel } from '@jupyterlab/notebook';
 
 import warningIcon from '../style/icons/warning.png';
 
 import { IModel as ISessionModel } from '@jupyterlab/services/lib/session/session';
+
+import { ServerConnection, KernelAPI } from '@jupyterlab/services';
 
 /**
  * A namespace for `LocalKernelActions` static methods.
@@ -15,9 +17,9 @@ export namespace LocalKernelActions {
   /**
    * Show the dialog to connect to a local kernel.
    *
-   * @param notebook - The target notebook widget.
+   * @param session - The session context used by the panel.
    */
-  export const showDialog = async (notebook: NotebookPanel): Promise<void> => {
+  export const showDialog = async (session: NotebookPanel): Promise<void> => {
     // object to hold input value
     const parameter: any = {
       host: ''
@@ -31,7 +33,7 @@ export namespace LocalKernelActions {
     });
 
     if (result.button.accept) {
-      await setConnection(parameter, notebook);
+      await setConnection(parameter, session);
     }
   };
 
@@ -39,11 +41,11 @@ export namespace LocalKernelActions {
    * Create a new connection at the client local host.
    *
    * @param inputField The input field from modal.
-   * @param notebook The target notebook widget.
+   * @param session The session context used by the panel.
    */
   export const setConnection = async (
     parameter: any,
-    notebook: NotebookPanel
+    session: NotebookPanel
   ): Promise<void> => {
     // Checks if a given string is in the url patterns (protocol-relative URL included)
     const verifyUrlPattern = new RegExp('^([a-z]+://|//)', 'i');
@@ -55,15 +57,28 @@ export namespace LocalKernelActions {
         buttons: [Dialog.okButton()]
       });
 
-      void LocalKernelActions.showDialog(notebook);
+      void LocalKernelActions.showDialog(session);
       return;
     }
 
     const url = new URL(parameter.host);
-    const { kernel } = await createSession(url);
+    const { kernel: clientKernel } = await createSession(url);
+    const clientSettings = createLocalSettings(url);
 
-    console.log(notebook.sessionContext.sessionManager.serverSettings);
-    console.log(kernel);
+    const remoteSettings = {
+      id: clientKernel.id,
+      token: clientSettings.token,
+      wsUrl: clientSettings.wsUrl
+    };
+
+    const settings = ServerConnection.makeSettings();
+    const kernel = await KernelAPI.startNew({ name: 'python3' }, settings);
+    await session.sessionContext.changeKernel(
+      { id: kernel.id },
+      remoteSettings
+    );
+
+    console.log(`Connected to ${url.origin}/api/kernels/${clientKernel.id}`);
   };
 
   /**
@@ -123,6 +138,20 @@ export namespace LocalKernelActions {
 
     const session = await createSession();
     return session;
+  };
+
+  /**
+   * Create settings for a local server connection.
+   *
+   * @param options The client URL to extract details
+   */
+  export const createLocalSettings = (
+    options: URL
+  ): ServerConnection.ISettings => {
+    const wsUrl = `ws://${options.host}/http_over_websocket/proxied_ws`;
+    const token = options.searchParams.get('token');
+
+    return ServerConnection.makeSettings({ wsUrl, token });
   };
 }
 
