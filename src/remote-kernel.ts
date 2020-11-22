@@ -89,11 +89,11 @@ export namespace RemoteKernelActions {
         });
       });
 
-    // Keep tracking of the previous kernel
-    let previousKernel = notebookPanel.sessionContext.session.kernel.id;
+    // Keep tracking of the current kernel
+    let currentKernel = notebookPanel.sessionContext.session.kernel.id;
 
     notebookPanel.sessionContext.kernelChanged.connect(async () => {
-      if (previousKernel === kernel.id) {
+      if (currentKernel === kernel.id) {
         const dialogResult = await showDialogBase({
           title: 'Remote Kernel Has Been Disconnected',
           body: 'This session is no longer connected to a remote kernel.',
@@ -102,7 +102,7 @@ export namespace RemoteKernelActions {
             Dialog.okButton()
           ]
         });
-        previousKernel = notebookPanel.sessionContext.session.kernel.id;
+        currentKernel = notebookPanel.sessionContext.session.kernel.id;
 
         if (dialogResult.button.label === 'Reconnect') {
           void setConnection(parameter, notebookPanel);
