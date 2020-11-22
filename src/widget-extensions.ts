@@ -10,9 +10,7 @@ import { setDatasetIcon, DatasetActions } from './dataset';
 
 import { setParameterIcon, ParameterActions } from './parameter';
 
-import { LocalKernelActions } from './local-kernel';
-
-import { kernelIcon } from '@jupyterlab/ui-components';
+import { RemoteKernelActions } from './remote-kernel';
 
 /**
  * A notebook widget extension that adds buttons to the toolbar.
@@ -45,19 +43,18 @@ export class ToolbarWidgetExtension
 
     panel.toolbar.insertAfter('setDataset', 'setParameter', parameter);
 
-    // adds a toolbarbutton for local kernel connection declaration
+    // adds a toolbarbutton for remote kernel connection declaration
     const localKernelConnection = new ToolbarButton({
-      icon: kernelIcon,
-      label: 'Local Kernel Connection',
+      label: 'Remote Kernel Connection',
       onClick: async (): Promise<void> => {
-        LocalKernelActions.showDialog(panel);
+        RemoteKernelActions.showDialog(panel);
       },
-      tooltip: 'Connect to a Local Kernel'
+      tooltip: 'Connect to a Remote Kernel'
     });
 
     panel.toolbar.insertBefore(
       'kernelName',
-      'setLocalKernel',
+      'setRemoteKernel',
       localKernelConnection
     );
 

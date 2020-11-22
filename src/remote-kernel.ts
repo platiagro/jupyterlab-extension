@@ -11,11 +11,11 @@ import { IModel as ISessionModel } from '@jupyterlab/services/lib/session/sessio
 import { ServerConnection, KernelAPI } from '@jupyterlab/services';
 
 /**
- * A namespace for `LocalKernelActions` static methods.
+ * A namespace for `RemoteKernelActions` static methods.
  */
-export namespace LocalKernelActions {
+export namespace RemoteKernelActions {
   /**
-   * Show the dialog to connect to a local kernel.
+   * Show the dialog to connect to a remote kernel.
    *
    * @param session - The session context used by the panel.
    */
@@ -25,9 +25,9 @@ export namespace LocalKernelActions {
       host: ''
     };
 
-    // Open a dialog that hosts a form to connect to a local kernel
+    // Open a dialog that hosts a form to connect to a remote kernel
     const result = await showDialogBase({
-      title: 'Connect to a Local Kernel',
+      title: 'Connect to a Remote Kernel',
       body: new DialogBody(parameter),
       buttons: [Dialog.cancelButton(), Dialog.okButton({ label: 'Connect' })]
     });
@@ -38,32 +38,32 @@ export namespace LocalKernelActions {
   };
 
   /**
-   * Create a new connection at the client local host.
+   * Create a new connection at the client remote host.
    *
    * @param inputField The input field from modal.
-   * @param session The session context used by the panel.
+   * @param notebookPanel A widget that hosts a notebook toolbar and content area.
    */
   export const setConnection = async (
     parameter: any,
-    session: NotebookPanel
+    notebookPanel: NotebookPanel
   ): Promise<void> => {
     // Checks if a given string is in the url patterns (protocol-relative URL included)
     const verifyUrlPattern = new RegExp('^([a-z]+://|//)', 'i');
 
     if (!parameter.host || !verifyUrlPattern.test(parameter.host)) {
       await showDialogBase({
-        title: 'Cannot create connection',
+        title: 'Cannot Create Connection',
         body: 'The host field is invalid.',
         buttons: [Dialog.okButton()]
       });
 
-      void LocalKernelActions.showDialog(session);
+      void RemoteKernelActions.showDialog(notebookPanel);
       return;
     }
 
     const url = new URL(parameter.host);
     const { kernel: clientKernel } = await createSession(url);
-    const clientSettings = createLocalSettings(url);
+    const clientSettings = createRemoteSettings(url);
 
     const remoteSettings = {
       id: clientKernel.id,
@@ -73,12 +73,43 @@ export namespace LocalKernelActions {
 
     const settings = ServerConnection.makeSettings();
     const kernel = await KernelAPI.startNew({ name: 'python3' }, settings);
-    await session.sessionContext.changeKernel(
-      { id: kernel.id },
-      remoteSettings
-    );
+    await notebookPanel.sessionContext
+      .changeKernel({ id: kernel.id }, remoteSettings)
+      .then(async () => {
+        console.log(
+          `Connected to ${url.origin}/api/kernels/${clientKernel.id}`
+        );
 
-    console.log(`Connected to ${url.origin}/api/kernels/${clientKernel.id}`);
+        await showDialogBase({
+          title: 'Connected to a Remote Kernel',
+          body:
+            "Platiagro's Jupyter frontend has now access to the kernel host file system. \
+            To disconnect, select another kernel.",
+          buttons: [Dialog.okButton()]
+        });
+      });
+
+    // Keep tracking of the previous kernel
+    let previousKernel = notebookPanel.sessionContext.session.kernel.id;
+
+    notebookPanel.sessionContext.kernelChanged.connect(async () => {
+      if (previousKernel === kernel.id) {
+        const dialogResult = await showDialogBase({
+          title: 'Remote Kernel Has Been Disconnected',
+          body: 'This session is no longer connected to a remote kernel.',
+          buttons: [
+            Dialog.createButton({ label: 'Reconnect' }),
+            Dialog.okButton()
+          ]
+        });
+        previousKernel = notebookPanel.sessionContext.session.kernel.id;
+
+        if (dialogResult.button.label === 'Reconnect') {
+          void setConnection(parameter, notebookPanel);
+          return;
+        }
+      }
+    });
   };
 
   /**
@@ -141,11 +172,11 @@ export namespace LocalKernelActions {
   };
 
   /**
-   * Create settings for a local server connection.
+   * Create settings for a remote server connection.
    *
    * @param options The client URL to extract details
    */
-  export const createLocalSettings = (
+  export const createRemoteSettings = (
     options: URL
   ): ServerConnection.ISettings => {
     const wsUrl = `ws://${options.host}/http_over_websocket/proxied_ws`;
@@ -156,7 +187,7 @@ export namespace LocalKernelActions {
 }
 
 /**
- * A widget which hosts a form to connect to a local kernel.
+ * A widget which hosts a form to connect to a remote kernel.
  */
 class DialogBody extends Widget {
   private _parameter: any;
@@ -173,19 +204,19 @@ class DialogBody extends Widget {
     body.className = 'modal-large';
 
     const instructionsParagraph = document.createElement('div');
-    instructionsParagraph.className = 'local-kernel-dialog-instructions';
+    instructionsParagraph.className = 'remote-kernel-dialog-instructions';
     const warningParagraph = document.createElement('div');
-    warningParagraph.className = 'local-kernel-dialog-warning';
+    warningParagraph.className = 'remote-kernel-dialog-warning';
     const inputHost = document.createElement('div');
     inputHost.className = 'input';
     const extraDialog = document.createElement('div');
-    extraDialog.className = 'local-kernel-dialog-extra-details';
+    extraDialog.className = 'remote-kernel-dialog-extra-details';
 
     // Instructions Text
     const instructionsWrapper = document.createElement('div');
     instructionsWrapper.className = 'jp-input-wrapper';
     instructionsWrapper.innerText =
-      'To learn more about on how to create a new local connection, checkout ';
+      'To learn more about on how to create a new remote connection, checkout ';
     const platiagroRef = document.createElement('a');
     platiagroRef.text = "PlatIAgro's instructions.";
     platiagroRef.href = 'https://platiagro.github.io/tutorials/';
@@ -204,7 +235,7 @@ class DialogBody extends Widget {
     icon.style.marginRight = '5px';
     const warningContent = document.createElement('p');
     warningContent.textContent =
-      'Confirm that the authors of this notebook are reliable before running it. With a local connection, the code you run can read, write and delete files on your computer.';
+      'Confirm that the authors of this notebook are reliable before running it. With a remote connection, the code you run can read, write and delete files on your computer.';
     warningContent.style.display = 'inline';
     wariningWrapper.appendChild(icon);
     wariningWrapper.appendChild(warningContent);
