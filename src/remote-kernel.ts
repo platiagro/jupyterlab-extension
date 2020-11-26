@@ -153,6 +153,10 @@ export namespace RemoteKernelActions {
       wsUrl: clientSettings.wsUrl
     };
 
+    if (!sessionContext.kernelDisplayStatus) {
+      await sessionContext.changeKernel({ name: 'python3' });
+    }
+
     const settings = ServerConnection.makeSettings();
     const kernel = await KernelAPI.startNew({ name: 'python3' }, settings);
 
@@ -184,7 +188,11 @@ export namespace RemoteKernelActions {
         });
 
         Private.setConnectionStatus(false);
-        Private.setCurrentKernel(sessionContext.session.kernel.id);
+        Private.setCurrentKernel(
+          sessionContext.kernelDisplayStatus
+            ? sessionContext.session.kernel.id
+            : null
+        );
       }
     });
   };
