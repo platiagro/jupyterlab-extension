@@ -43,20 +43,19 @@ export class ToolbarWidgetExtension
 
     panel.toolbar.insertAfter('setDataset', 'setParameter', parameter);
 
-    // adds a toolbarbutton for remote kernel connection declaration
-    const remoteKernelConnection = new ToolbarButton({
-      label: 'Remote Kernel Connection',
+    // adds a toolbarbutton for remote kernel connection/disconnection declaration
+    const remoteKernelButton = new ToolbarButton({
+      label: 'Remote Kernel',
       onClick: async (): Promise<void> => {
-        RemoteKernelActions.showDialog(panel);
+        RemoteKernelActions.handleAction(panel.sessionContext);
       },
-      tooltip: 'Connect to a Remote Kernel',
-      className: 'remote-kernel-connection'
+      tooltip: 'Switch between remote kernel and local kernel'
     });
 
     panel.toolbar.insertBefore(
       'kernelName',
       'setRemoteKernel',
-      remoteKernelConnection
+      remoteKernelButton
     );
 
     return new DisposableDelegate(() => {

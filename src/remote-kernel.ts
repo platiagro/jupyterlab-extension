@@ -1,16 +1,10 @@
-import {
-  showDialog as showDialogBase,
-  Dialog,
-  ToolbarButton
-} from '@jupyterlab/apputils';
-
-import { NotebookPanel } from '@jupyterlab/notebook';
+import { showDialog as showDialogBase, Dialog } from '@jupyterlab/apputils';
 
 import { ServerConnection, KernelAPI } from '@jupyterlab/services';
 
 import { IModel as ISessionModel } from '@jupyterlab/services/lib/session/session';
 
-import { checkIcon } from '@jupyterlab/ui-components';
+import { ISessionContext } from '@jupyterlab/apputils';
 
 import { Widget } from '@lumino/widgets';
 
@@ -21,11 +15,72 @@ import warningIcon from '../style/icons/warning.png';
  */
 export namespace RemoteKernelActions {
   /**
+   * A namespace for remote kernel private data.
+   */
+  namespace Private {
+    let isConnected = false;
+    let currentKernel: string;
+
+    /**
+     * Update remote kernel connection.
+     *
+     * @param status The status to be settup.
+     */
+    export const setConnectionStatus = (status: boolean): void => {
+      isConnected = status;
+    };
+
+    /**
+     * Get remote kernel status.
+     *
+     * @returns Current remote kernel status.
+     */
+    export const getConnectionStatus = (): boolean => {
+      return isConnected;
+    };
+
+    /**
+     * Update current kernel id.
+     *
+     * @param id The id to be settup.
+     */
+    export const setCurrentKernel = (id: string): void => {
+      currentKernel = id;
+    };
+
+    /**
+     * Get current kernel id.
+     *
+     * @returns Current kernel id.
+     */
+    export const getCurrentKernel = (): string => {
+      return currentKernel;
+    };
+  }
+
+  /**
+   * Handle remote kernel button event click.
+   *
+   * @param sessionContext The session context used by the panel.
+   */
+  export const handleAction = async (
+    sessionContext: ISessionContext
+  ): Promise<void> => {
+    if (Private.getConnectionStatus()) {
+      void RemoteKernelActions.showDisconnectionDialog(sessionContext);
+    } else {
+      void RemoteKernelActions.showConnectionDialog(sessionContext);
+    }
+  };
+
+  /**
    * Show the dialog to connect to a remote kernel.
    *
-   * @param session - The session context used by the panel.
+   * @param sessionContext - The session context used by the panel.
    */
-  export const showDialog = async (session: NotebookPanel): Promise<void> => {
+  export const showConnectionDialog = async (
+    sessionContext: ISessionContext
+  ): Promise<void> => {
     // object to hold input value
     const parameter: any = {
       host: ''
@@ -39,7 +94,27 @@ export namespace RemoteKernelActions {
     });
 
     if (result.button.accept) {
-      await setConnection(parameter, session);
+      await setConnection(parameter, sessionContext);
+    }
+  };
+
+  /**
+   * Show the dialog to disconnect from a remote kernel.
+   *
+   * @param sessionContext - The session context used by the panel.
+   */
+  export const showDisconnectionDialog = async (
+    sessionContext: ISessionContext
+  ): Promise<void> => {
+    const dialog = await showDialogBase({
+      title: 'Are you sure you want to disconnect?',
+      body: 'You will use the kernel provided by PlatIAgro.',
+      buttons: [Dialog.cancelButton(), Dialog.okButton()]
+    });
+
+    if (dialog.button.accept) {
+      await sessionContext.changeKernel({ name: 'python3' });
+      Private.setConnectionStatus(false);
     }
   };
 
@@ -47,36 +122,29 @@ export namespace RemoteKernelActions {
    * Create a new connection at the client remote host.
    *
    * @param inputField The input field from modal.
-   * @param notebookPanel A widget that hosts a notebook toolbar and content area.
+   * @param sessionContext The session context used by the panel.
+
    */
   export const setConnection = async (
     parameter: any,
-    notebookPanel: NotebookPanel
+    sessionContext: ISessionContext
   ): Promise<void> => {
     // Checks if a given string is in the url patterns (protocol-relative URL included)
     const verifyUrlPattern = new RegExp('^([a-z]+://|//)', 'i');
-
-    // Since @jupyterlab/notebook doesn't support id attribute
-    // when creating an element in the widget's toolbar, create it manually
-    document
-      .getElementsByClassName('remote-kernel-connection')[0]
-      .getElementsByClassName('jp-ToolbarButtonComponent-label')[0].id =
-      'remote-kernel-button';
 
     if (!parameter.host || !verifyUrlPattern.test(parameter.host)) {
       await showDialogBase({
         title: 'Cannot Create Connection',
         body: 'The host field is invalid.',
-        buttons: [Dialog.okButton()]
+        buttons: [Dialog.okButton({ displayType: 'warn' })]
       });
 
-      void RemoteKernelActions.showDialog(notebookPanel);
+      void RemoteKernelActions.showConnectionDialog(sessionContext);
       return;
     }
 
-    document.getElementById('remote-kernel-button').innerText = 'Connecting...';
     const url = new URL(parameter.host);
-    const { kernel: clientKernel } = await createSession(url, notebookPanel);
+    const { kernel: clientKernel } = await createSession(url, sessionContext);
     const clientSettings = createRemoteSettings(url);
 
     const remoteSettings = {
@@ -88,33 +156,9 @@ export namespace RemoteKernelActions {
     const settings = ServerConnection.makeSettings();
     const kernel = await KernelAPI.startNew({ name: 'python3' }, settings);
 
-    await notebookPanel.sessionContext
+    await sessionContext
       .changeKernel({ id: kernel.id }, remoteSettings)
       .then(async () => {
-        const connectedChecker = new ToolbarButton({
-          icon: checkIcon,
-          className: 'successfully-connected'
-        });
-
-        notebookPanel.toolbar.insertBefore(
-          'setRemoteKernel',
-          'successfullyConnected',
-          connectedChecker
-        );
-
-        // Update DOM's elements
-        document.getElementsByClassName('successfully-connected')[0].id =
-          'remote-kernel-connected';
-
-        document.getElementById('remote-kernel-button').innerText =
-          'Connected (local)';
-
-        document.getElementById(
-          'remote-kernel-button'
-        ).title = `Connected to a remote kernel on port ${url.port}`;
-
-        document.getElementById('remote-kernel-connected').style.display = '';
-
         console.log(
           `Connected to ${url.origin}/api/kernels/${clientKernel.id}`
         );
@@ -122,52 +166,38 @@ export namespace RemoteKernelActions {
         await showDialogBase({
           title: 'Connected to a Remote Kernel',
           body:
-            "Platiagro's Jupyter frontend has now access to the kernel host file system. \
-            To disconnect, select another kernel.",
+            "Platiagro's Jupyter frontend has now access to the kernel host resources.",
           buttons: [Dialog.okButton()]
         });
+
+        Private.setConnectionStatus(true);
       });
 
-    // Keep tracking of the current kernel
-    let currentKernel = notebookPanel.sessionContext.session.kernel.id;
+    Private.setCurrentKernel(sessionContext.session.kernel.id);
 
-    notebookPanel.sessionContext.kernelChanged.connect(async () => {
-      if (currentKernel === kernel.id) {
-        const dialogResult = await showDialogBase({
+    sessionContext.kernelChanged.connect(async () => {
+      if (Private.getCurrentKernel() === kernel.id) {
+        await showDialogBase({
           title: 'Remote Kernel Has Been Disconnected',
           body: 'This session is no longer connected to a remote kernel.',
-          buttons: [
-            Dialog.createButton({ label: 'Reconnect' }),
-            Dialog.okButton()
-          ]
+          buttons: [Dialog.okButton({ label: 'Dismiss' })]
         });
 
-        currentKernel = notebookPanel.sessionContext.session.kernel.id;
-
-        // Update DOM's elements
-        document.getElementById('remote-kernel-button').innerText =
-          'Connect to a Remote Kernel';
-
-        document.getElementById('remote-kernel-connected').style.display =
-          'none';
-
-        if (dialogResult.button.label === 'Reconnect') {
-          void setConnection(parameter, notebookPanel);
-          return;
-        }
+        Private.setConnectionStatus(false);
+        Private.setCurrentKernel(sessionContext.session.kernel.id);
       }
     });
   };
 
   /**
-   * Create a new Session Object
+   * Create a new Session Object.
    *
    * @param localHost URL
-   * @param notebookPanel A widget that hosts a notebook toolbar and content area.
+   * @param sessionContext The session context used by the panel.
    */
   export const createSession = async (
     localHost: URL,
-    notebookPanel: NotebookPanel
+    sessionContext: ISessionContext
   ): Promise<ISessionModel> => {
     const plugin = {
       endpoint: '/http_over_websocket',
@@ -220,13 +250,13 @@ export namespace RemoteKernelActions {
             body:
               "The operation couldn't be completed. Please, check the entered informations such as \
               hostname, socket port and token.",
-            buttons: [Dialog.okButton()]
+            buttons: [
+              Dialog.okButton({ displayType: 'warn', label: 'Dismiss' })
+            ]
           });
 
           if (errorDialog.button.accept) {
-            document.getElementById('remote-kernel-button').innerText =
-              'Connect to a Remote Kernel';
-            void RemoteKernelActions.showDialog(notebookPanel);
+            void RemoteKernelActions.showConnectionDialog(sessionContext);
             return;
           }
         };
@@ -240,7 +270,7 @@ export namespace RemoteKernelActions {
   /**
    * Create settings for a remote server connection.
    *
-   * @param options The client URL to extract details
+   * @param options The client URL to extract details.
    */
   export const createRemoteSettings = (
     options: URL
