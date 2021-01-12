@@ -1,35 +1,40 @@
 # -*- coding: utf-8 -*-
+import json
 import os
-import requests
+import re
 
+import requests
 from unicodedata import normalize
 
 DATASETS_ENDPOINT = os.getenv("DATASETS_ENDPOINT", "http://datasets.platiagro:8080")
 PROJECTS_ENDPOINT = os.getenv("PROJECTS_ENDPOINT", "http://projects.platiagro:8080")
 
 
-def update_task(task_id, experiment_notebook=None, deployment_notebook=None) -> dict:
-    """Updates a task from notebook using PlatIAgro Projects API.
+def update_task(task_id, parameters=None) -> dict:
+    """
+    Updates a task from notebook using PlatIAgro Projects API.
 
-    Args:
-        task_id (str): the task uuid.
-        experiment_notebook (dict): the experiment notebook.
-        deployment_notebook (dict): the deployment notebook.
+    Parameters
+    ----------
+    task_id : str
+    parameters : dict
 
-    Returns:
-        dict: The task details.
+    Returns
+    -------
+    dict
+        The task details.
 
-    Raises:
-        ConnectionError: When the request did not succeed.
-        HTTPError: When the request did not succeed.
+    Raises
+    ------
+    ConnectionError
+        When the request did not succeed.
+    HTTPError
+        When the request did not succeed.
     """
     json = {}
 
-    if experiment_notebook:
-        json["experimentNotebook"] = experiment_notebook
-
-    if deployment_notebook:
-        json["deploymentNotebook"] = deployment_notebook
+    if parameters:
+        json["parameters"] = parameters
 
     r = requests.patch(f"{PROJECTS_ENDPOINT}/tasks/{task_id}", json=json)
     r.raise_for_status()
@@ -104,3 +109,80 @@ def create_dataset_locally(file: bytes, filename: str = "file", name: str = "fil
         return {"filename": filename, "name": name}
     except OSError as e:
         print(e)
+
+
+def parse_parameters(experiment_notebook):
+    """
+    Parses and returns the parameters declared in a notebook.
+
+    Parameters
+    ----------
+    experiment_notebook : dict
+
+    Returns
+    -------
+    list:
+        A list of parameters (name, default, type, label, description).
+    """
+    parameters = []
+    cells = experiment_notebook.get("cells", [])
+    for cell in cells:
+        cell_type = cell["cell_type"]
+        tags = cell["metadata"].get("tags", [])
+        if cell_type == "code" and "parameters" in tags:
+            source = cell["source"]
+
+            parameters.extend(read_parameters_from_source(source))
+
+    return parameters
+
+
+def read_parameters_from_source(source):
+    """
+    Lists the parameters declared in source code.
+
+    Parameters
+    ----------
+    source : list
+        Source code lines.
+
+    Returns
+    -------
+    list:
+        A list of parameters (name, default, type, label, description).
+    """
+    parameters = []
+    # Regex to capture a parameter declaration
+    # Inspired by Google Colaboratory Forms
+    # Example of a parameter declaration:
+    # name = "value" #@param ["1st option", "2nd option"] {type:"string", label:"Foo Bar", description:"Foo Bar"}
+    pattern = re.compile(r"^(\w+)\s*=\s*(.+)\s+#@param(?:(\s+\[.*\]))?(\s+\{.*\})")
+
+    for line in source:
+        match = pattern.search(line)
+        if match:
+            try:
+                name = match.group(1)
+                default = match.group(2)
+                options = match.group(3)
+                metadata = match.group(4)
+
+                parameter = {"name": name}
+
+                if default and default != "None":
+                    if default in ["True", "False"]:
+                        default = default.lower()
+                    parameter["default"] = json.loads(default)
+
+                if options:
+                    parameter["options"] = json.loads(options)
+
+                # adds quotes to metadata keys
+                metadata = re.sub(r"(\w+):", r'"\1":', metadata)
+                parameter.update(json.loads(metadata))
+
+                parameters.append(parameter)
+            except json.JSONDecodeError:
+                pass
+
+    return parameters
