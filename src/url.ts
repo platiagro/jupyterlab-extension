@@ -52,6 +52,19 @@ export namespace UrlActions {
       });
     }
 
+    // Get the last file because it is the showing one
+    const lastFileName = filenames
+      ? filenames[filenames.length - 1]
+      : undefined;
+
+    if (lastFileName) {
+      const path = `${dirpath.substr(1)}/${lastFileName}`;
+      // Opens browser. This is needed if the browser is not open
+      await app.commands.execute('filebrowser:activate', { path });
+      // Navigate to the correct path
+      await app.commands.execute('filebrowser:go-to-path', { path });
+    }
+
     // clean query string
     delete query['open'];
     const url = args.path + URLExt.objectToQueryString(query) + args.hash;
