@@ -4,7 +4,7 @@ import {
   showDialog as showDialogBase,
   Dialog,
   showErrorMessage,
-  Spinner
+  Spinner,
 } from '@jupyterlab/apputils';
 
 import { Notebook } from '@jupyterlab/notebook';
@@ -29,14 +29,14 @@ export namespace DatasetActions {
   export const showDialog = async (notebook: Notebook): Promise<void> => {
     // declare an object that will keep the inputted data
     const parameter: any = {
-      file: null
+      file: null,
     };
 
     // Open a dialog that hosts a form to select a file
     const result = await showDialogBase({
       title: 'Upload File and Set Dataset Name',
       body: new DialogBody(parameter),
-      buttons: [Dialog.cancelButton(), Dialog.okButton()]
+      buttons: [Dialog.cancelButton(), Dialog.okButton()],
     });
 
     if (result.button.accept) {
@@ -51,7 +51,7 @@ export namespace DatasetActions {
           name: 'dataset',
           value: parameterValue,
           variableType: 'string',
-          fieldType: 'input'
+          fieldType: 'input',
         };
         ParameterActions.setParameter(notebook, parameter);
       }
@@ -67,7 +67,7 @@ export namespace DatasetActions {
     spinnerDialogBody.node.appendChild(spinner.node);
     const spinnerDialog = new Dialog({
       body: spinnerDialogBody,
-      buttons: []
+      buttons: [],
     });
     spinnerDialog.launch();
     try {
@@ -75,7 +75,7 @@ export namespace DatasetActions {
       formData.append('file', file);
       const response = await requestAPI<any>('datasets', {
         method: 'POST',
-        body: formData
+        body: formData,
       });
       spinnerDialog.dispose();
       return response;
@@ -141,5 +141,5 @@ class DialogBody extends Widget {
 
 export const setDatasetIcon = new LabIcon({
   name: 'platiagro:set-dataset',
-  svgstr: setDatasetSvgstr
+  svgstr: setDatasetSvgstr,
 });

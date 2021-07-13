@@ -16,7 +16,8 @@ import { RemoteKernelActions } from './remote-kernel';
  * A notebook widget extension that adds buttons to the toolbar.
  */
 export class ToolbarWidgetExtension
-  implements DocumentRegistry.IWidgetExtension<NotebookPanel, INotebookModel> {
+  implements DocumentRegistry.IWidgetExtension<NotebookPanel, INotebookModel>
+{
   createNew(
     panel: NotebookPanel,
     _: DocumentRegistry.IContext<INotebookModel>
@@ -27,7 +28,7 @@ export class ToolbarWidgetExtension
       onClick: async (): Promise<void> => {
         DatasetActions.showDialog(panel.content);
       },
-      tooltip: 'Upload File and Set Dataset Name'
+      tooltip: 'Upload File and Set Dataset Name',
     });
 
     panel.toolbar.insertAfter('cellType', 'setDataset', uploader);
@@ -38,7 +39,7 @@ export class ToolbarWidgetExtension
       onClick: async (): Promise<void> => {
         ParameterActions.showDialog(panel.content);
       },
-      tooltip: 'Add Parameter'
+      tooltip: 'Add Parameter',
     });
 
     panel.toolbar.insertAfter('setDataset', 'setParameter', parameter);
@@ -49,7 +50,7 @@ export class ToolbarWidgetExtension
       onClick: async (): Promise<void> => {
         RemoteKernelActions.handleAction(panel.sessionContext);
       },
-      tooltip: 'Switch between remote kernel and local kernel'
+      tooltip: 'Switch between remote kernel and local kernel',
     });
 
     panel.toolbar.insertBefore(

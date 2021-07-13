@@ -38,7 +38,7 @@ export class AddWidget extends Widget {
       height: '18px',
       width: '18px',
       marginLeft: '3px',
-      marginRight: '-5px'
+      marginRight: '-5px',
     });
     this.addClass('unapplied-tag');
     option.appendChild(iconContainer);

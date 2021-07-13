@@ -31,7 +31,7 @@ export namespace UrlActions {
     const filenames = query['open'].split(',');
     // get url path, then removes prefixes: `/lab/workspaces/foo`, `/lab`, `/tree`
     let dirpath = args.path
-      .replace(new RegExp(`^${paths.urls.workspaces}/([^?/]+)`), '')
+      .replace(new RegExp(`^${paths.directories.workspaces}/([^?/]+)`), '')
       .replace(new RegExp(`^${paths.urls.app}`), '')
       .replace(new RegExp('^/tree'), '');
 
@@ -39,7 +39,7 @@ export namespace UrlActions {
     dirpath = decodeURI(dirpath);
 
     const sleep = (milliseconds: number): Promise<void> => {
-      return new Promise(resolve => setTimeout(resolve, milliseconds));
+      return new Promise((resolve) => setTimeout(resolve, milliseconds));
     };
 
     // open files
@@ -48,7 +48,7 @@ export namespace UrlActions {
       // because the command docmanager:open is asynchronous
       await sleep(500);
       void app.commands.execute('docmanager:open', {
-        path: `${dirpath.substr(1)}/${filename}`
+        path: `${dirpath.substr(1)}/${filename}`,
       });
     }
 

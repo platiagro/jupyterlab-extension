@@ -29,14 +29,14 @@ export namespace ParameterActions {
       options: [],
       multiple: false,
       label: '',
-      description: ''
+      description: '',
     }
   ): Promise<void> => {
     // Open a dialog that hosts a form to set a parameter
     const result = await showDialogBase({
       title: 'Add Parameter',
       body: new DialogBody(parameter),
-      buttons: [Dialog.cancelButton(), Dialog.okButton()]
+      buttons: [Dialog.cancelButton(), Dialog.okButton()],
     });
 
     if (result.button.accept) {
@@ -52,6 +52,7 @@ export namespace ParameterActions {
    */
   export const setParameter = async (
     notebook: Notebook,
+    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
     parameter: any
   ): Promise<void> => {
     // validate required fields
@@ -59,7 +60,7 @@ export namespace ParameterActions {
       await showDialogBase({
         title: 'Cannot add parameter',
         body: 'Variable name, Variable type, and Form field type are required',
-        buttons: [Dialog.okButton()]
+        buttons: [Dialog.okButton()],
       });
 
       void ParameterActions.showDialog(notebook, parameter);
@@ -67,7 +68,7 @@ export namespace ParameterActions {
     }
 
     // get the index of first cell that has a tag 'parameters'
-    const index = notebook.widgets.findIndex(cell => {
+    const index = notebook.widgets.findIndex((cell) => {
       const tags = cell.model.metadata.get('tags') as string[];
       return tags === undefined ? false : tags.includes('parameters');
     });
@@ -233,9 +234,9 @@ class DialogBody extends Widget {
       'integer',
       'number',
       'boolean',
-      'feature'
+      'feature',
     ];
-    variableTypeOptions.forEach(item => {
+    variableTypeOptions.forEach((item) => {
       const option = document.createElement('option');
       option.value = item;
       option.textContent = item;
@@ -251,7 +252,7 @@ class DialogBody extends Widget {
     this.fieldTypeSelect = document.createElement('select');
     this.fieldTypeSelect.name = 'fieldType';
     const fieldTypeOptions = ['', 'input', 'dropdown'];
-    fieldTypeOptions.forEach(item => {
+    fieldTypeOptions.forEach((item) => {
       const option = document.createElement('option');
       option.value = item;
       option.textContent = item;
@@ -329,5 +330,5 @@ class DialogBody extends Widget {
 
 export const setParameterIcon = new LabIcon({
   name: 'platiagro:set-parameter',
-  svgstr: setParameterSvgstr
+  svgstr: setParameterSvgstr,
 });
