@@ -145,28 +145,18 @@ export namespace RemoteKernelActions {
     }
 
     const url = new URL(parameter.host);
-    const { kernel: clientKernel } = await createSession(url, sessionContext);
+    await createSession(url, sessionContext);
     const clientSettings = createRemoteSettings(url);
 
-    const remoteSettings = {
-      id: clientKernel.id,
-      token: clientSettings.token,
-      wsUrl: clientSettings.wsUrl,
-    };
-
-    if (!sessionContext.kernelDisplayStatus) {
-      await sessionContext.changeKernel({ name: 'python3' });
-    }
-
-    const settings = ServerConnection.makeSettings();
-    const kernel = await KernelAPI.startNew({ name: 'python3' }, settings);
+    const kernel = await KernelAPI.startNew(
+      { name: 'python3' },
+      clientSettings
+    );
 
     await sessionContext
-      .changeKernel({ ...remoteSettings, id: kernel.id }) // TODO
+      .changeKernel({ id: kernel.id, name: kernel.name }, clientSettings)
       .then(async () => {
-        console.log(
-          `Connected to ${url.origin}/api/kernels/${clientKernel.id}`
-        );
+        console.log(`Connected to ${url.origin}/api/kernels/${kernel.id}`);
 
         await showDialogBase({
           title: 'Connected to a Remote Kernel',
@@ -234,17 +224,24 @@ export namespace RemoteKernelActions {
 
     // Create the Session and format the response
     const createSession = async (): Promise<any> => {
-      return new Promise((resolve, reject) => {
+      const base64ToJSON = (base64: string) => {
+        if (typeof Buffer !== 'undefined') {
+          return JSON.parse(Buffer.from(base64, 'base64').toString());
+        } else if (typeof window.atob !== 'undefined') {
+          return JSON.parse(window.atob(base64));
+        }
+
+        throw new Error('Cannot convert base64 to JSON');
+      };
+
+      return new Promise((resolve) => {
         websocket.addEventListener('open', () => {
           websocket.send(sessionDetails);
         });
 
         websocket.addEventListener('message', async (e) => {
-          const response = await JSON.parse(e.data);
-          const kernel = await JSON.parse(
-            Buffer.from(response.data, 'base64').toString()
-          );
-
+          const response = JSON.parse(e.data); // base64 string
+          const kernel = base64ToJSON(response.data);
           websocket.close();
           resolve(kernel);
         });
@@ -281,8 +278,12 @@ export namespace RemoteKernelActions {
   ): ServerConnection.ISettings => {
     const wsUrl = `ws://${options.host}/http_over_websocket/proxied_ws`;
     const token = options.searchParams.get('token');
-
-    return ServerConnection.makeSettings({ wsUrl, token });
+    const baseUrl = options.origin;
+    return ServerConnection.makeSettings({
+      wsUrl,
+      token,
+      baseUrl,
+    });
   };
 }
 
