@@ -40,12 +40,12 @@
   },
   "dependencies": {
     "@jupyterlab/application": "^3.0.11",
-    "@jupyterlab/apputils": "https://github.com/platiagro/jupyterlab/raw/536d221138ef720b042579908826e44b5d7018ed/packages/apputils/jupyterlab-apputils-v3.0.9.tgz",
+    "@jupyterlab/apputils": "https://github.com/platiagro/jupyterlab/raw/c85848d6f9b4fb66bb36bac9ce948dfe7b82be8c/packages/apputils/jupyterlab-apputils-v3.0.9.tgz",
     "@jupyterlab/coreutils": "^5.0.6",
     "@jupyterlab/docregistry": "^3.0.11",
     "@jupyterlab/mainmenu": "^3.0.9",
     "@jupyterlab/notebook": "^3.0.11",
-    "@jupyterlab/services": "https://github.com/platiagro/jupyterlab/raw/536d221138ef720b042579908826e44b5d7018ed/packages/services/jupyterlab-services-v6.0.9.tgz",
+    "@jupyterlab/services": "https://github.com/platiagro/jupyterlab/raw/c85848d6f9b4fb66bb36bac9ce948dfe7b82be8c/packages/services/jupyterlab-services-v6.0.9.tgz",
     "@jupyterlab/ui-components": "^3.0.7",
     "@lumino/disposable": "^1.7.0",
     "@lumino/widgets": "^1.23.0"

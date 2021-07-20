@@ -152,9 +152,9 @@
     sanitize-html "~2.3.3"
     url "^0.11.0"
 
-"@jupyterlab/apputils@file:../jupyterlab/packages/apputils/jupyterlab-apputils-v3.0.9.tgz":
+"@jupyterlab/apputils@https://github.com/platiagro/jupyterlab/raw/c85848d6f9b4fb66bb36bac9ce948dfe7b82be8c/packages/apputils/jupyterlab-apputils-v3.0.9.tgz":
   version "3.0.9"
-  resolved "file:../jupyterlab/packages/apputils/jupyterlab-apputils-v3.0.9.tgz#bc82009d4b679f6489100d140abb801241bca010f3c5756268f8482b71d48263fbfd67dc91446c512fc23251b3874dbb834b069920edf2a59c8599b569618322"
+  resolved "https://github.com/platiagro/jupyterlab/raw/c85848d6f9b4fb66bb36bac9ce948dfe7b82be8c/packages/apputils/jupyterlab-apputils-v3.0.9.tgz#afc4cff708b1e90d0ef6fe3085e9474488b7726d"
   dependencies:
     "@jupyterlab/coreutils" "^5.0.6"
     "@jupyterlab/services" "^6.0.9"
@@ -465,9 +465,9 @@
     node-fetch "^2.6.0"
     ws "^7.2.0"
 
-"@jupyterlab/services@file:../jupyterlab/packages/services/jupyterlab-services-v6.0.9.tgz":
+"@jupyterlab/services@https://github.com/platiagro/jupyterlab/raw/c85848d6f9b4fb66bb36bac9ce948dfe7b82be8c/packages/services/jupyterlab-services-v6.0.9.tgz":
   version "6.0.9"
-  resolved "file:../jupyterlab/packages/services/jupyterlab-services-v6.0.9.tgz#e8e00cbd5bac47234392e2131ed7c48b3f29860dc13f85d0b606fe3ec6e5a953b832b8a68acb08f07401ac1fa48cda4ef7f3f1ae427d6b4dee911ff643ecdf07"
+  resolved "https://github.com/platiagro/jupyterlab/raw/c85848d6f9b4fb66bb36bac9ce948dfe7b82be8c/packages/services/jupyterlab-services-v6.0.9.tgz#99a1db6c3683fbf1aee07505f7731b58ff6e0205"
   dependencies:
     "@jupyterlab/coreutils" "^5.0.6"
     "@jupyterlab/nbformat" "^3.0.6"

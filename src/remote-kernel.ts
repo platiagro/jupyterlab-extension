@@ -1,6 +1,6 @@
 import { showDialog as showDialogBase, Dialog } from '@jupyterlab/apputils';
 
-import { ServerConnection, KernelAPI } from '@jupyterlab/services';
+import { ServerConnection } from '@jupyterlab/services';
 
 import { IModel as ISessionModel } from '@jupyterlab/services/lib/session/session';
 
@@ -145,18 +145,13 @@ export namespace RemoteKernelActions {
     }
 
     const url = new URL(parameter.host);
-    await createSession(url, sessionContext);
-    const clientSettings = createRemoteSettings(url);
-
-    const kernel = await KernelAPI.startNew(
-      { name: 'python3' },
-      clientSettings
-    );
+    const newSession = await createSession(url, sessionContext);
+    const remoteKernelSettings = createRemoteSettings(url);
 
     await sessionContext
-      .changeKernel({ id: kernel.id, name: kernel.name }, clientSettings)
-      .then(async () => {
-        console.log(`Connected to ${url.origin}/api/kernels/${kernel.id}`);
+      .changeKernel({ id: newSession.kernel.id }, remoteKernelSettings)
+      .then(async (newKernel) => {
+        console.log(`Connected to ${url.origin}/api/kernels/${newKernel.id}`);
 
         await showDialogBase({
           title: 'Connected to a Remote Kernel',
@@ -170,7 +165,7 @@ export namespace RemoteKernelActions {
     Private.setCurrentKernel(sessionContext.session.kernel.id);
 
     sessionContext.kernelChanged.connect(async () => {
-      if (Private.getCurrentKernel() === kernel.id) {
+      if (Private.getCurrentKernel() === newSession.kernel.id) {
         await showDialogBase({
           title: 'Remote Kernel Has Been Disconnected',
           body: 'This session is no longer connected to a remote kernel.',
@@ -249,7 +244,7 @@ export namespace RemoteKernelActions {
         websocket.onerror = async (): Promise<any> => {
           const errorDialog = await showDialogBase({
             title: 'WebSocket Connection Error',
-            body: "The operation couldn't be completed. Please, check the entered informations such as \
+            body: "The operation couldn't be completed. Please, check the entered information such as \
               hostname, socket port and token.",
             buttons: [
               Dialog.okButton({ displayType: 'warn', label: 'Dismiss' }),
@@ -264,8 +259,7 @@ export namespace RemoteKernelActions {
       });
     };
 
-    const session = await createSession();
-    return session;
+    return await createSession();
   };
 
   /**
