@@ -1,6 +1,6 @@
 import { showDialog as showDialogBase, Dialog } from '@jupyterlab/apputils';
 
-import { ServerConnection } from '@jupyterlab/services';
+import { ServerConnection, KernelAPI } from '@jupyterlab/services';
 
 import { IModel as ISessionModel } from '@jupyterlab/services/lib/session/session';
 
@@ -115,6 +115,7 @@ export namespace RemoteKernelActions {
     if (dialog.button.accept) {
       await sessionContext.changeKernel({ name: 'python3' });
       Private.setConnectionStatus(false);
+      Private.setCurrentKernel('');
     }
   };
 
@@ -140,32 +141,39 @@ export namespace RemoteKernelActions {
         buttons: [Dialog.okButton({ displayType: 'warn' })],
       });
 
-      void RemoteKernelActions.showConnectionDialog(sessionContext);
+      RemoteKernelActions.showConnectionDialog(sessionContext);
       return;
     }
 
     const url = new URL(parameter.host);
-    const newSession = await createSession(url, sessionContext);
+    await createSession(url, sessionContext);
     const remoteKernelSettings = createRemoteSettings(url);
 
-    await sessionContext
-      .changeKernel({ id: newSession.kernel.id }, remoteKernelSettings)
-      .then(async (newKernel) => {
-        console.log(`Connected to ${url.origin}/api/kernels/${newKernel.id}`);
+    if (!sessionContext.kernelDisplayStatus) {
+      await sessionContext.changeKernel({ name: 'python3' });
+    }
 
-        await showDialogBase({
-          title: 'Connected to a Remote Kernel',
-          body: "Platiagro's Jupyter frontend has now access to the kernel host resources.",
-          buttons: [Dialog.okButton()],
-        });
+    const settings = ServerConnection.makeSettings();
+    const kernel = await KernelAPI.startNew({ name: 'python3' }, settings);
 
-        Private.setConnectionStatus(true);
-      });
+    const newKernel = await sessionContext.changeKernel(
+      { id: kernel.id },
+      remoteKernelSettings
+    );
 
+    console.log(`Connected to ${url.origin}/api/kernels/${newKernel.id}`);
+
+    await showDialogBase({
+      title: 'Connected to a Remote Kernel',
+      body: "Platiagro's Jupyter frontend has now access to the kernel host resources.",
+      buttons: [Dialog.okButton()],
+    });
+
+    Private.setConnectionStatus(true);
     Private.setCurrentKernel(sessionContext.session.kernel.id);
 
     sessionContext.kernelChanged.connect(async () => {
-      if (Private.getCurrentKernel() === newSession.kernel.id) {
+      if (Private.getCurrentKernel() === kernel.id) {
         await showDialogBase({
           title: 'Remote Kernel Has Been Disconnected',
           body: 'This session is no longer connected to a remote kernel.',
@@ -176,7 +184,7 @@ export namespace RemoteKernelActions {
         Private.setCurrentKernel(
           sessionContext.kernelDisplayStatus
             ? sessionContext.session.kernel.id
-            : null
+            : ''
         );
       }
     });
@@ -192,74 +200,74 @@ export namespace RemoteKernelActions {
     localHost: URL,
     sessionContext: ISessionContext
   ): Promise<ISessionModel> => {
-    const plugin = {
-      endpoint: '/http_over_websocket',
-      version: '0.0.7',
-      wsAuthUrl: localHost.href,
-    };
+    const createSessionAndFormatResponse = async (): Promise<ISessionModel> => {
+      return new Promise((resolve, reject) => {
+        const base64ToJSON = (base64: string) => {
+          if (typeof Buffer !== 'undefined') {
+            return JSON.parse(Buffer.from(base64, 'base64').toString());
+          } else if (typeof window.atob !== 'undefined') {
+            return JSON.parse(window.atob(base64));
+          }
 
-    const url = `ws://${localHost.host}${plugin.endpoint}?min_version=${plugin.version}&jupyter_http_over_ws_auth_url=${plugin.wsAuthUrl}`;
+          throw new Error('Cannot convert base64 to JSON');
+        };
 
-    const websocket = new WebSocket(url);
-    let messageId = 0;
+        const plugin = {
+          endpoint: '/http_over_websocket',
+          version: '0.0.7',
+          wsAuthUrl: localHost.href,
+        };
 
-    const sessionDetails = JSON.stringify({
-      message_id: (++messageId).toString(),
-      method: 'POST',
-      path: '/api/sessions',
-      body: JSON.stringify({
-        name: 'platiagro',
-        path: 'Experiment.ipynb',
-        type: 'notebook',
-        kernel: {
-          name: 'python3',
-        },
-      }),
-    });
+        const url = `ws://${localHost.host}${plugin.endpoint}?min_version=${plugin.version}&jupyter_http_over_ws_auth_url=${plugin.wsAuthUrl}`;
+        const websocket = new WebSocket(url);
 
-    // Create the Session and format the response
-    const createSession = async (): Promise<any> => {
-      const base64ToJSON = (base64: string) => {
-        if (typeof Buffer !== 'undefined') {
-          return JSON.parse(Buffer.from(base64, 'base64').toString());
-        } else if (typeof window.atob !== 'undefined') {
-          return JSON.parse(window.atob(base64));
-        }
+        const sessionDetails = JSON.stringify({
+          message_id: '0',
+          method: 'POST',
+          path: '/api/sessions',
+          body: JSON.stringify({
+            name: 'platiagro',
+            path: 'Experiment.ipynb',
+            type: 'notebook',
+            kernel: {
+              name: 'python3',
+            },
+          }),
+        });
 
-        throw new Error('Cannot convert base64 to JSON');
-      };
-
-      return new Promise((resolve) => {
         websocket.addEventListener('open', () => {
           websocket.send(sessionDetails);
         });
 
-        websocket.addEventListener('message', async (e) => {
+        websocket.addEventListener('message', (e) => {
           const response = JSON.parse(e.data); // base64 string
           const kernel = base64ToJSON(response.data);
           websocket.close();
           resolve(kernel);
         });
 
-        websocket.onerror = async (): Promise<any> => {
+        websocket.addEventListener('error', async () => {
           const errorDialog = await showDialogBase({
             title: 'WebSocket Connection Error',
             body: "The operation couldn't be completed. Please, check the entered information such as \
-              hostname, socket port and token.",
+            hostname, socket port and token.",
             buttons: [
               Dialog.okButton({ displayType: 'warn', label: 'Dismiss' }),
             ],
           });
 
           if (errorDialog.button.accept) {
-            void RemoteKernelActions.showConnectionDialog(sessionContext);
+            RemoteKernelActions.showConnectionDialog(sessionContext);
+            reject(new Error('WebSocket Connection Error'));
+            websocket.close();
             return;
           }
-        };
+        });
       });
     };
 
-    return await createSession();
+    const session = await createSessionAndFormatResponse();
+    return session;
   };
 
   /**
