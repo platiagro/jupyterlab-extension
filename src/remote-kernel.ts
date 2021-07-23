@@ -156,10 +156,29 @@ export namespace RemoteKernelActions {
     const settings = ServerConnection.makeSettings();
     const kernel = await KernelAPI.startNew({ name: 'python3' }, settings);
 
-    const newKernel = await sessionContext.changeKernel(
-      { id: kernel.id },
-      remoteKernelSettings
-    );
+    let connectionCount = 0;
+    const connectToRemoteKernel = async (): Promise<any> => {
+      const newKernelConnection = await sessionContext.changeKernel(
+        { id: kernel.id },
+        remoteKernelSettings
+      );
+
+      connectionCount = connectionCount + 1;
+
+      // Max 20 connections. If is 20 return even if the kernel is dead
+      if (connectionCount === 20) {
+        return newKernelConnection;
+      }
+
+      // If the kernel is dead try to connect again
+      if (newKernelConnection.status === 'dead') {
+        return await connectToRemoteKernel();
+      }
+
+      return newKernelConnection;
+    };
+
+    const newKernel = await connectToRemoteKernel();
 
     console.log(`Connected to ${url.origin}/api/kernels/${newKernel.id}`);
 
