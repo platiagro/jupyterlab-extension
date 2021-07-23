@@ -71,7 +71,7 @@ setup_args = dict(
     cmdclass= cmdclass,
     packages=setuptools.find_packages(),
     install_requires=[
-        # "jupyterlab @ git+https://github.com/platiagro/jupyterlab.git@fix/packages#egg=jupyterlab",
+        "jupyterlab @ git+https://github.com/platiagro/jupyterlab.git@v0.2.0-jupyterlab-v3.0.16#egg=jupyterlab",
         "requests~=2.0",
     ],
     zip_safe=False,
