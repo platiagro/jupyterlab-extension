@@ -304,6 +304,7 @@ export namespace RemoteKernelActions {
       wsUrl,
       token,
       baseUrl,
+      appendToken: !!token,
     });
   };
 }
