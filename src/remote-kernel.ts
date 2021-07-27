@@ -2,8 +2,6 @@ import { showDialog as showDialogBase, Dialog } from '@jupyterlab/apputils';
 
 import { ServerConnection, KernelAPI } from '@jupyterlab/services';
 
-import { IModel as ISessionModel } from '@jupyterlab/services/lib/session/session';
-
 import { ISessionContext } from '@jupyterlab/apputils';
 
 import { Widget } from '@lumino/widgets';
@@ -146,12 +144,7 @@ export namespace RemoteKernelActions {
     }
 
     const url = new URL(parameter.host);
-    await createSession(url, sessionContext);
     const remoteKernelSettings = createRemoteSettings(url);
-
-    if (!sessionContext.kernelDisplayStatus) {
-      await sessionContext.changeKernel({ name: 'python3' });
-    }
 
     const settings = ServerConnection.makeSettings();
     const kernel = await KernelAPI.startNew({ name: 'python3' }, settings);
@@ -207,86 +200,6 @@ export namespace RemoteKernelActions {
         );
       }
     });
-  };
-
-  /**
-   * Create a new Session Object.
-   *
-   * @param localHost URL
-   * @param sessionContext The session context used by the panel.
-   */
-  export const createSession = async (
-    localHost: URL,
-    sessionContext: ISessionContext
-  ): Promise<ISessionModel> => {
-    const createSessionAndFormatResponse = async (): Promise<ISessionModel> => {
-      return new Promise((resolve, reject) => {
-        const base64ToJSON = (base64: string) => {
-          if (typeof Buffer !== 'undefined') {
-            return JSON.parse(Buffer.from(base64, 'base64').toString());
-          } else if (typeof window.atob !== 'undefined') {
-            return JSON.parse(window.atob(base64));
-          }
-
-          throw new Error('Cannot convert base64 to JSON');
-        };
-
-        const plugin = {
-          endpoint: '/http_over_websocket',
-          version: '0.0.7',
-          wsAuthUrl: localHost.href,
-        };
-
-        const url = `ws://${localHost.host}${plugin.endpoint}?min_version=${plugin.version}&jupyter_http_over_ws_auth_url=${plugin.wsAuthUrl}`;
-        const websocket = new WebSocket(url);
-
-        const sessionDetails = JSON.stringify({
-          message_id: '0',
-          method: 'POST',
-          path: '/api/sessions',
-          body: JSON.stringify({
-            name: 'platiagro',
-            path: 'Experiment.ipynb',
-            type: 'notebook',
-            kernel: {
-              name: 'python3',
-            },
-          }),
-        });
-
-        websocket.addEventListener('open', () => {
-          websocket.send(sessionDetails);
-        });
-
-        websocket.addEventListener('message', (e) => {
-          const response = JSON.parse(e.data); // base64 string
-          const kernel = base64ToJSON(response.data);
-          websocket.close();
-          resolve(kernel);
-        });
-
-        websocket.addEventListener('error', async () => {
-          const errorDialog = await showDialogBase({
-            title: 'WebSocket Connection Error',
-            body: "The operation couldn't be completed. Please, check the entered information such as \
-            hostname, socket port and token.",
-            buttons: [
-              Dialog.okButton({ displayType: 'warn', label: 'Dismiss' }),
-            ],
-          });
-
-          if (errorDialog.button.accept) {
-            RemoteKernelActions.showConnectionDialog(sessionContext);
-            reject(new Error('WebSocket Connection Error'));
-            websocket.close();
-            return;
-          }
-        });
-      });
-    };
-
-    const session = await createSessionAndFormatResponse();
-    return session;
   };
 
   /**
