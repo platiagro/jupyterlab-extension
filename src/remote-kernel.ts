@@ -2,8 +2,6 @@ import { showDialog as showDialogBase, Dialog } from '@jupyterlab/apputils';
 
 import { ServerConnection, KernelAPI } from '@jupyterlab/services';
 
-import { IModel as ISessionModel } from '@jupyterlab/services/lib/session/session';
-
 import { ISessionContext } from '@jupyterlab/apputils';
 
 import { Widget } from '@lumino/widgets';
@@ -83,14 +81,14 @@ export namespace RemoteKernelActions {
   ): Promise<void> => {
     // object to hold input value
     const parameter: any = {
-      host: ''
+      host: '',
     };
 
     // Open a dialog that hosts a form to connect to a remote kernel
     const result = await showDialogBase({
       title: 'Connect to a Remote Kernel',
       body: new DialogBody(parameter),
-      buttons: [Dialog.cancelButton(), Dialog.okButton({ label: 'Connect' })]
+      buttons: [Dialog.cancelButton(), Dialog.okButton({ label: 'Connect' })],
     });
 
     if (result.button.accept) {
@@ -109,12 +107,13 @@ export namespace RemoteKernelActions {
     const dialog = await showDialogBase({
       title: 'Are you sure you want to disconnect?',
       body: 'You will use the kernel provided by PlatIAgro.',
-      buttons: [Dialog.cancelButton(), Dialog.okButton()]
+      buttons: [Dialog.cancelButton(), Dialog.okButton()],
     });
 
     if (dialog.button.accept) {
       await sessionContext.changeKernel({ name: 'python3' });
       Private.setConnectionStatus(false);
+      Private.setCurrentKernel('');
     }
   };
 
@@ -126,6 +125,7 @@ export namespace RemoteKernelActions {
 
    */
   export const setConnection = async (
+    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
     parameter: any,
     sessionContext: ISessionContext
   ): Promise<void> => {
@@ -136,47 +136,52 @@ export namespace RemoteKernelActions {
       await showDialogBase({
         title: 'Cannot Create Connection',
         body: 'The host field is invalid.',
-        buttons: [Dialog.okButton({ displayType: 'warn' })]
+        buttons: [Dialog.okButton({ displayType: 'warn' })],
       });
 
-      void RemoteKernelActions.showConnectionDialog(sessionContext);
+      RemoteKernelActions.showConnectionDialog(sessionContext);
       return;
     }
 
     const url = new URL(parameter.host);
-    const { kernel: clientKernel } = await createSession(url, sessionContext);
-    const clientSettings = createRemoteSettings(url);
-
-    const remoteSettings = {
-      id: clientKernel.id,
-      token: clientSettings.token,
-      wsUrl: clientSettings.wsUrl
-    };
-
-    if (!sessionContext.kernelDisplayStatus) {
-      await sessionContext.changeKernel({ name: 'python3' });
-    }
+    const remoteKernelSettings = createRemoteSettings(url);
 
     const settings = ServerConnection.makeSettings();
     const kernel = await KernelAPI.startNew({ name: 'python3' }, settings);
 
-    await sessionContext
-      .changeKernel({ id: kernel.id }, remoteSettings)
-      .then(async () => {
-        console.log(
-          `Connected to ${url.origin}/api/kernels/${clientKernel.id}`
-        );
+    let connectionCount = 0;
+    const connectToRemoteKernel = async (): Promise<any> => {
+      const newKernelConnection = await sessionContext.changeKernel(
+        { id: kernel.id },
+        remoteKernelSettings
+      );
 
-        await showDialogBase({
-          title: 'Connected to a Remote Kernel',
-          body:
-            "Platiagro's Jupyter frontend has now access to the kernel host resources.",
-          buttons: [Dialog.okButton()]
-        });
+      connectionCount = connectionCount + 1;
 
-        Private.setConnectionStatus(true);
-      });
+      // Max 20 connections. If is 20 return even if the kernel is dead
+      if (connectionCount === 20) {
+        return newKernelConnection;
+      }
 
+      // If the kernel is dead try to connect again
+      if (newKernelConnection.status === 'dead') {
+        return await connectToRemoteKernel();
+      }
+
+      return newKernelConnection;
+    };
+
+    const newKernel = await connectToRemoteKernel();
+
+    console.log(`Connected to ${url.origin}/api/kernels/${newKernel.id}`);
+
+    await showDialogBase({
+      title: 'Connected to a Remote Kernel',
+      body: "Platiagro's Jupyter frontend has now access to the kernel host resources.",
+      buttons: [Dialog.okButton()],
+    });
+
+    Private.setConnectionStatus(true);
     Private.setCurrentKernel(sessionContext.session.kernel.id);
 
     sessionContext.kernelChanged.connect(async () => {
@@ -184,95 +189,17 @@ export namespace RemoteKernelActions {
         await showDialogBase({
           title: 'Remote Kernel Has Been Disconnected',
           body: 'This session is no longer connected to a remote kernel.',
-          buttons: [Dialog.okButton({ label: 'Dismiss' })]
+          buttons: [Dialog.okButton({ label: 'Dismiss' })],
         });
 
         Private.setConnectionStatus(false);
         Private.setCurrentKernel(
           sessionContext.kernelDisplayStatus
             ? sessionContext.session.kernel.id
-            : null
+            : ''
         );
       }
     });
-  };
-
-  /**
-   * Create a new Session Object.
-   *
-   * @param localHost URL
-   * @param sessionContext The session context used by the panel.
-   */
-  export const createSession = async (
-    localHost: URL,
-    sessionContext: ISessionContext
-  ): Promise<ISessionModel> => {
-    const plugin = {
-      endpoint: '/http_over_websocket',
-      version: '0.0.7',
-      wsAuthUrl: localHost.href
-    };
-
-    const url = `ws://${localHost.host}${plugin.endpoint}?min_version=${
-      plugin.version
-    }&jupyter_http_over_ws_auth_url=${plugin.wsAuthUrl}`;
-
-    const websocket = new WebSocket(url);
-    let messageId = 0;
-
-    const sessionDetails = JSON.stringify({
-      // eslint-disable-next-line @typescript-eslint/camelcase
-      message_id: (++messageId).toString(),
-      method: 'POST',
-      path: '/api/sessions',
-      body: JSON.stringify({
-        name: 'platiagro',
-        path: 'Experiment.ipynb',
-        type: 'notebook',
-        kernel: {
-          name: 'python3'
-        }
-      })
-    });
-
-    // Create the Session and format the response
-    const createSession = async (): Promise<any> => {
-      return new Promise((resolve, reject) => {
-        websocket.addEventListener('open', () => {
-          websocket.send(sessionDetails);
-        });
-
-        websocket.addEventListener('message', async e => {
-          const response = await JSON.parse(e.data);
-          const kernel = await JSON.parse(
-            Buffer.from(response.data, 'base64').toString()
-          );
-
-          websocket.close();
-          resolve(kernel);
-        });
-
-        websocket.onerror = async (): Promise<any> => {
-          const errorDialog = await showDialogBase({
-            title: 'WebSocket Connection Error',
-            body:
-              "The operation couldn't be completed. Please, check the entered informations such as \
-              hostname, socket port and token.",
-            buttons: [
-              Dialog.okButton({ displayType: 'warn', label: 'Dismiss' })
-            ]
-          });
-
-          if (errorDialog.button.accept) {
-            void RemoteKernelActions.showConnectionDialog(sessionContext);
-            return;
-          }
-        };
-      });
-    };
-
-    const session = await createSession();
-    return session;
   };
 
   /**
@@ -285,8 +212,13 @@ export namespace RemoteKernelActions {
   ): ServerConnection.ISettings => {
     const wsUrl = `ws://${options.host}/http_over_websocket/proxied_ws`;
     const token = options.searchParams.get('token');
-
-    return ServerConnection.makeSettings({ wsUrl, token });
+    const baseUrl = options.origin;
+    return ServerConnection.makeSettings({
+      wsUrl,
+      token,
+      baseUrl,
+      appendToken: !!token,
+    });
   };
 }
 

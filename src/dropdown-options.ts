@@ -11,6 +11,7 @@ export class DropdownOptions extends Widget {
   /**
    * Construct a new widget.
    */
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
   constructor(parameter: any) {
     super();
     this.parameter = parameter;

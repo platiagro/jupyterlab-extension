@@ -82,6 +82,7 @@ def generate_name(filename: str, attempt: int = 1, path: str = "/tmp/data") -> s
         name = f"{name}-{attempt}{extension}"
 
     try:
+        os.makedirs("/tmp/data", exist_ok=True)
         open(f"{path}/{name}")
     except FileNotFoundError:
         return name
@@ -103,6 +104,7 @@ def create_dataset_locally(file: bytes, filename: str = "file", name: str = "fil
     """
 
     try:
+        os.makedirs("/tmp/data", exist_ok=True)
         with open(f"{path}/{name}", 'wb') as csv_file:
             csv_file.write(file)
 

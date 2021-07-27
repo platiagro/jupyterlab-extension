@@ -1,6 +1,6 @@
 {
   "name": "@platiagro/jupyterlab-extension",
-  "version": "0.0.1",
+  "version": "0.2.0",
   "description": "A JupyterLab extension that connects to PlatIAgro.",
   "keywords": [
     "jupyter",
@@ -39,28 +39,28 @@
     "watch": "tsc -w"
   },
   "dependencies": {
-    "@jupyterlab/application": "^2.0.0",
-    "@jupyterlab/apputils": "https://github.com/platiagro/jupyterlab/releases/download/v0.2.0platiagro-v2.1.2/jupyterlab-apputils-2.1.1.tgz",
-    "@jupyterlab/coreutils": "^4.0.0",
-    "@jupyterlab/docregistry": "^2.1.2",
-    "@jupyterlab/mainmenu": "^2.1.1",
-    "@jupyterlab/notebook": "^2.1.2",
-    "@jupyterlab/services": "https://github.com/platiagro/jupyterlab/releases/download/v0.2.0platiagro-v2.1.2/jupyterlab-services-5.1.0.tgz",
-    "@jupyterlab/ui-components": "^2.1.1",
-    "@lumino/disposable": "^1.3.6",
-    "@lumino/widgets": "^1.12.2"
+    "@jupyterlab/application": "^3.0.11",
+    "@jupyterlab/apputils": "https://github.com/platiagro/jupyterlab/raw/v0.2.0-jupyterlab-v3.0.16/packages/apputils/jupyterlab-apputils-v3.0.9.tgz",
+    "@jupyterlab/coreutils": "^5.0.6",
+    "@jupyterlab/docregistry": "^3.0.11",
+    "@jupyterlab/mainmenu": "^3.0.9",
+    "@jupyterlab/notebook": "^3.0.11",
+    "@jupyterlab/services": "https://github.com/platiagro/jupyterlab/raw/v0.2.0-jupyterlab-v3.0.16/packages/services/jupyterlab-services-v6.0.9.tgz",
+    "@jupyterlab/ui-components": "^3.0.7",
+    "@lumino/disposable": "^1.7.0",
+    "@lumino/widgets": "^1.23.0"
   },
   "devDependencies": {
-    "@types/node": "^14.14.5",
-    "@typescript-eslint/eslint-plugin": "^2.25.0",
-    "@typescript-eslint/parser": "^2.25.0",
-    "eslint": "^6.8.0",
-    "eslint-config-prettier": "^6.10.1",
-    "eslint-plugin-prettier": "^3.1.2",
-    "mkdirp": "^1.0.3",
-    "prettier": "1.16.4",
-    "rimraf": "^2.6.1",
-    "typescript": "~3.7.0"
+    "@types/node": "^16.3.1",
+    "@typescript-eslint/eslint-plugin": "^4.28.3",
+    "@typescript-eslint/parser": "^4.28.3",
+    "eslint": "^7.30.0",
+    "eslint-config-prettier": "^8.3.0",
+    "eslint-plugin-prettier": "^3.4.0",
+    "mkdirp": "^1.0.4",
+    "prettier": "2.3.2",
+    "rimraf": "^3.0.2",
+    "typescript": "~4.3.5"
   },
   "sideEffects": [
     "style/**/*"

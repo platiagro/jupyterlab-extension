@@ -35,7 +35,7 @@ export class OptionWidget extends Widget {
       height: '18px',
       width: '18px',
       marginLeft: '5px',
-      marginRight: '-3px'
+      marginRight: '-3px',
     });
     if (this.applied) {
       this.addClass('applied-tag');

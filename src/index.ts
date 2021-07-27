@@ -1,7 +1,7 @@
 import {
   IRouter,
   JupyterFrontEnd,
-  JupyterFrontEndPlugin
+  JupyterFrontEndPlugin,
 } from '@jupyterlab/application';
 
 import { IMainMenu } from '@jupyterlab/mainmenu';
@@ -53,7 +53,7 @@ const extension: JupyterFrontEndPlugin<void> = {
     addContextMenuItems(app);
 
     addRouteHandlers(router);
-  }
+  },
 };
 
 /**
@@ -87,7 +87,7 @@ function addCommands(
     execute: () => {
       DatasetActions.showDialog(nbtracker.currentWidget.content);
     },
-    isEnabled
+    isEnabled,
   });
 
   app.commands.addCommand(CommandIDs.setParameter, {
@@ -95,7 +95,7 @@ function addCommands(
     execute: () => {
       ParameterActions.showDialog(nbtracker.currentWidget.content);
     },
-    isEnabled
+    isEnabled,
   });
 
   app.commands.addCommand(CommandIDs.openFiles, {
@@ -103,7 +103,7 @@ function addCommands(
     execute: () => {
       UrlActions.openFiles(app, paths, router);
     },
-    isEnabled
+    isEnabled,
   });
 }
 
@@ -115,11 +115,11 @@ function addMainMenuItems(mainMenu: IMainMenu | null): void {
     mainMenu.editMenu.addGroup(
       [
         {
-          command: CommandIDs.setDataset
+          command: CommandIDs.setDataset,
         },
         {
-          command: CommandIDs.setParameter
-        }
+          command: CommandIDs.setParameter,
+        },
       ],
       20
     );
@@ -133,22 +133,22 @@ function addContextMenuItems(app: JupyterFrontEnd): void {
   app.contextMenu.addItem({
     type: 'separator',
     selector: '.jp-Notebook',
-    rank: 20
+    rank: 20,
   });
   app.contextMenu.addItem({
     command: CommandIDs.setDataset,
     selector: '.jp-Notebook',
-    rank: 21
+    rank: 21,
   });
   app.contextMenu.addItem({
     command: CommandIDs.setParameter,
     selector: '.jp-Notebook',
-    rank: 22
+    rank: 22,
   });
   app.contextMenu.addItem({
     type: 'separator',
     selector: '.jp-Notebook',
-    rank: 23
+    rank: 23,
   });
 }
 
@@ -159,7 +159,7 @@ function addRouteHandlers(router: IRouter): void {
   router.register({
     command: CommandIDs.openFiles,
     pattern: /(\?open=.*?|&open=.*?)($|&)/,
-    rank: 10 // High priority: 10:100.
+    rank: 10, // High priority: 10:100.
   });
 }
 
