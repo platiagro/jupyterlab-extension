@@ -56,7 +56,9 @@ jobs:
         python-version: '3.7'
         architecture: 'x64'
     - name: Install dependencies
-      run: pip install .
+      run: |
+        pip install git+https://github.com/platiagro/jupyterlab.git
+        pip install .
     - name: Build the extension
       run: |
         jlpm
