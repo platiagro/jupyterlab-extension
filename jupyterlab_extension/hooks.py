@@ -27,6 +27,7 @@ def post_save(model, os_path, contents_manager, **kwargs):
         return
 
     task_id = find_task_by_name(os_path)
+    print(f"ERROR: {task_id}")
 
     if task_id is None:
         return
