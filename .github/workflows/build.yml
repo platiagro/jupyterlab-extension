@@ -57,7 +57,7 @@ jobs:
         architecture: 'x64'
     - name: Install dependencies
       run: |
-        pip install git+https://github.com/platiagro/jupyterlab.git
+        pip install git+https://github.com/platiagro/jupyterlab@v0.2.0-jupyterlab-v3.0.16
         pip install .
     - name: Build the extension
       run: |
