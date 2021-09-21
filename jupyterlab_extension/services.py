@@ -34,15 +34,15 @@ def find_task_by_name(os_path):
     match = re.search(r"/tasks/(.*?)/Experiment.ipynb", os_path)
 
     if match:
-        match = re.split("/", os_path)[2]
+        task_name = match.group(1)
 
-        params = {'name': match}
+        params = {'name': task_name}
         r = requests.get(f"{PROJECTS_ENDPOINT}/tasks", params=params)
         r.raise_for_status()
         data = r.json()
         data_tasks = data["tasks"][0]
 
-    return data_tasks.get("uuid")
+        return data_tasks.get("uuid")
 
 
 def update_task(task_id, parameters=None) -> dict:
