@@ -26,13 +26,13 @@ def post_save(model, os_path, contents_manager, **kwargs):
     if model["type"] != "notebook":
         return
 
-    with open(os_path) as f:
-        notebook = json.load(f)
-
     task_id = find_task_by_name(os_path)
 
     if task_id is None:
         return
+
+    with open(os_path) as f:
+        notebook = json.load(f)
 
     parameters = parse_parameters(notebook)
 
