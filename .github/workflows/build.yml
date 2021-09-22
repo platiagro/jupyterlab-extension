@@ -49,14 +49,16 @@ jobs:
     - name: Install node
       uses: actions/setup-node@v1
       with:
-       node-version: '10.x'
+       node-version: '12.x'
     - name: Install Python
       uses: actions/setup-python@v1
       with:
         python-version: '3.7'
         architecture: 'x64'
     - name: Install dependencies
-      run: pip install .
+      run: |
+        pip install git+https://github.com/platiagro/jupyterlab@v0.2.0-jupyterlab-v3.0.16
+        pip install .
     - name: Build the extension
       run: |
         jlpm

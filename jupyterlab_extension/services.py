@@ -10,6 +10,44 @@ DATASETS_ENDPOINT = os.getenv("DATASETS_ENDPOINT", "http://datasets.platiagro:80
 PROJECTS_ENDPOINT = os.getenv("PROJECTS_ENDPOINT", "http://projects.platiagro:8080")
 
 
+def find_task_by_name(os_path):
+    """
+    Get the task name from the notebook using the PlatIAgro Projects API.
+
+    Parameters
+    ----------
+    os_path : str
+
+    Returns
+    -------
+    dict
+        The task_id.
+
+    Raises
+    ------
+    ConnectionError
+        When the request did not succeed.
+    HTTPError
+        When the request did not succeed.
+    """
+    # only do this for Experiment.ipynb
+    match = re.search(r"/tasks/(.*?)/Experiment.ipynb", os_path)
+
+    if match:
+        task_name = match.group(1)
+
+        params = {'name': task_name}
+        r = requests.get(f"{PROJECTS_ENDPOINT}/tasks", params=params)
+        r.raise_for_status()
+        tasks = r.json()['tasks']
+
+        if len(tasks) > 0:
+            for task in tasks:
+                if task['name'] == task_name:
+
+                    return task["uuid"]
+
+
 def update_task(task_id, parameters=None) -> dict:
     """
     Updates a task from notebook using PlatIAgro Projects API.
