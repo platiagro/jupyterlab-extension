@@ -39,11 +39,13 @@ def find_task_by_name(os_path):
         params = {'name': task_name}
         r = requests.get(f"{PROJECTS_ENDPOINT}/tasks", params=params)
         r.raise_for_status()
-        data = r.json()
-        if len(data["tasks"]) > 0:
-            data_tasks = data["tasks"][0]
+        tasks = r.json()['tasks']
 
-            return data_tasks.get("uuid")
+        if len(tasks) > 0:
+            for task in tasks:
+                if task['name'] == task_name:
+
+                    return task["uuid"]
 
 
 def update_task(task_id, parameters=None) -> dict:
